@@ -1,0 +1,11 @@
+{
+  "translates": "Переводы",
+  "key": "Ключ",
+  "download": "Скачать",
+  "create-key": "Создать ключ",
+  "This key already exists.": "Этот ключ уже существует.",
+  "locale_ru": "Русский",
+  "locale_en": "Английский",
+  "locale_uz": "Узбекский",
+  "locale_oz": "Латинский узбекский"
+}

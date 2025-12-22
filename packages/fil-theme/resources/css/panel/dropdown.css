@@ -1,0 +1,9 @@
+.fi-dropdown-panel {
+    @apply rounded-2xl dark:bg-gray-800;
+}
+
+.fi-dropdown-panel {
+    &:where(.dark, .dark *) {
+        background-color: var(--dark-card-bg-color);
+    }
+}

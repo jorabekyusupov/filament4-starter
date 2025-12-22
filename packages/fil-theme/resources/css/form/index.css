@@ -1,0 +1,22 @@
+
+.fi-input-wrp {
+    @apply shadow-none
+}
+
+select:where(.dark, .dark *) {
+    option {
+        background: var(--dark-card-bg-color);
+    }
+}
+.fi-input:where(.dark, .dark *) {
+    background-color: var(--dark-card-bg-color);
+    border-color: transparent;
+    box-shadow: 0 0.1875rem 0.75rem 0 rgba(19, 17, 32, 0.2);
+    border-radius: 8px;
+
+}
+.fi-global-search-ctn {
+    &:where(.dark, .dark *) {
+
+    }
+}

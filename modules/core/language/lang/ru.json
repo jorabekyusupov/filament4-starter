@@ -1,0 +1,12 @@
+{
+  "languages": "Языки",
+  "language": "Язык",
+  "prefix": "Префикс",
+  "language_name": "Название языка",
+  "active": "Активный",
+  "default": "По умолчанию",
+  "not default": "Не по умолчанию",
+  "language_code": "Код языка",
+  "system_languages": "Языки системы"
+
+}

@@ -1,0 +1,11 @@
+{
+  "languages": "Languages",
+  "language": "Language",
+  "prefix": "Prefix",
+  "language_name": "Language name",
+  "active": "Active",
+  "default": "Default",
+  "not default": "Not default",
+  "language_code": "Language code",
+  "system_languages": "System languages"
+}

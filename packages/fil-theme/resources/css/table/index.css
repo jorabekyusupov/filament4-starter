@@ -1,0 +1,40 @@
+.fi-ta{
+    @apply bg-gray-50 dark:bg-gray-800 p-1 border border-gray-300 dark:border-gray-700 rounded-2xl;
+}
+.fi-ta-ctn {
+    @apply bg-white  rounded-[calc(var(--radius-2xl)-var(--spacing))]  border border-gray-300  ring-0 shadow-none
+}
+
+.fi-ta-ctn .fi-ta-header-toolbar {
+    @apply border-0;
+}
+
+.fi-dropdown .fi-icon-btn-badge-ctn {
+    @apply dark:bg-gray-800;
+}
+
+.fi-ta-ctn:where(.dark, .dark *)  {
+    background-color: transparent;
+
+}
+
+.fi-ta:where(.dark, .dark *){
+    background-color: #2f3349;
+    border-color: transparent;
+
+}
+.fi-ta-ctn{
+    border-color: transparent;
+
+
+}
+.fi-ta {
+    border: none !important;
+    box-shadow: 0 0.1875rem 0.75rem 0 rgba(19, 17, 32, 0.2);
+}
+.fi-ta-text {
+    &:not(.fi-inline) {
+        padding-inline: calc(var(--spacing) * 3);
+        padding-block: calc(var(--spacing) * 0);
+    }
+}

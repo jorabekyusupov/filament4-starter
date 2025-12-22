@@ -1,0 +1,29 @@
+{
+    "name": "modules/core",
+    "description": "core",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Modules\\MakerModule\\": "maker-module/src",
+            "Modules\\User\\": "user/src",
+            "Modules\\Language\\": "language/src",
+            "Modules\\Organization\\": "organization/src",
+            "Modules\\Application\\": "application/src",
+            "Modules\\Translate\\": "translate/src"
+        }
+    },
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
+                "Modules\\User\\Providers\\UserServiceProvider",
+                "Modules\\Language\\Providers\\LanguageServiceProvider",
+                "Modules\\Organization\\Providers\\OrganizationServiceProvider",
+                "Modules\\Application\\Providers\\ApplicationServiceProvider",
+                "Modules\\Translate\\Providers\\TranslateServiceProvider"
+            ]
+        }
+    }
+}

@@ -1,0 +1,66 @@
+<?php
+
+namespace Jora\Modular\Tests\Commands\Make;
+
+use Jora\Modular\Console\Commands\Make\MakeSeeder;
+use Jora\Modular\Tests\Concerns\TestsMakeCommands;
+use Jora\Modular\Tests\Concerns\WritesToAppFilesystem;
+use Jora\Modular\Tests\TestCase;
+
+class MakeSeederTest extends TestCase
+{
+	use WritesToAppFilesystem;
+	use TestsMakeCommands;
+	
+	public function test_it_overrides_the_default_command(): void
+	{
+		$this->requiresLaravelVersion('9.2.0');
+		
+		$this->artisan('make:seeder', ['--help' => true])
+			->expectsOutputToContain('--module')
+			->assertExitCode(0);
+	}
+	
+	public function test_it_scaffolds_a_seeder_in_the_module_when_module_option_is_set(): void
+	{
+		$command = MakeSeeder::class;
+		$arguments = ['name' => 'TestSeeder'];
+		$expected_path = version_compare($this->app->version(), '8.0.0', '>=')
+			? 'database/seeders/TestSeeder.php'
+			: 'database/seeds/TestSeeder.php';
+		$expected_substrings = [
+			'use Illuminate\Database\Seeder',
+			'class TestSeeder extends Seeder',
+		];
+		
+		if (version_compare($this->app->version(), '8.0.0', '>=')) {
+			$expected_substrings[] = 'namespace Modules\TestModule\Database\Seeders;';
+		}
+		
+		$this->filesystem()->deleteDirectory($this->getBasePath().$this->normalizeDirectorySeparators('database/seeds'));
+		$this->filesystem()->deleteDirectory($this->getModulePath('test-module', 'database/seeds'));
+		
+		$this->assertModuleCommandResults($command, $arguments, $expected_path, $expected_substrings);
+	}
+	
+	public function test_it_scaffolds_a_seeder_in_the_app_when_module_option_is_missing(): void
+	{
+		$command = MakeSeeder::class;
+		$arguments = ['name' => 'TestSeeder'];
+		$expected_path = version_compare($this->app->version(), '8.0.0', '>=')
+			? 'database/seeders/TestSeeder.php'
+			: 'database/seeds/TestSeeder.php';
+		$expected_substrings = [
+			'use Illuminate\Database\Seeder',
+			'class TestSeeder extends Seeder',
+		];
+		
+		if (version_compare($this->app->version(), '8.0.0', '>=')) {
+			$expected_substrings[] = 'namespace Database\Seeders;';
+		}
+		
+		$this->filesystem()->deleteDirectory($this->getBasePath().$this->normalizeDirectorySeparators('database/seeds'));
+		
+		$this->assertBaseCommandResults($command, $arguments, $expected_path, $expected_substrings);
+	}
+}

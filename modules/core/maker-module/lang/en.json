@@ -1,0 +1,10 @@
+{
+  "settings": "Settings",
+  "language": "Language",
+  "id": "ID",
+  "name": "Name",
+  "Created At": "Created At",
+  "Updated At": "Updated At",
+  "status": "Status"
+
+}

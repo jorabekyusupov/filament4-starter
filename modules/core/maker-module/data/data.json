@@ -1,0 +1,51 @@
+[
+    {
+        "name": "user-module",
+        "source": "admin",
+        "namespace": "Modules\\User",
+        "path": "modules\/core\/user",
+        "status": true,
+        "stable": true
+    },
+    {
+        "name": "maker-module",
+        "source": "admin",
+        "namespace": "Modules\\MakerModule",
+        "path": "modules\/core\/maker-module",
+        "status": true,
+        "stable": false
+    },
+    {
+        "name": "language-module",
+        "source": "admin",
+        "namespace": "Modules\\Language",
+        "path": "modules\/core\/language",
+        "status": true,
+        "stable": true
+    },
+    {
+        "name": "organization",
+        "source": "admin",
+        "namespace": "Modules\\Organization",
+        "path": "modules\/core\/organization",
+        "status": true,
+        "stable": true
+    },
+    {
+        "name": "application",
+        "source": "admin",
+        "namespace": "Modules\\Application",
+        "path": "modules\/core\/application",
+        "status": true,
+        "stable": true
+    },
+    {
+        "name": "translate",
+        "source": "admin",
+        "namespace": "Modules\\Translate",
+        "path": "modules\/core\/translate",
+        "status": true,
+        "stable": true
+    }
+
+]

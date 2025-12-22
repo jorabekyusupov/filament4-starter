@@ -1,0 +1,30 @@
+<?php
+
+namespace Modules\MakerModule\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ModuleTable extends Model
+{
+    protected $table = 'module_tables';
+    protected $fillable = [
+        'name',
+        'module_id',
+        'soft_deletes',
+        'timestamps',
+        'logged',
+        'status',
+        'user_id',
+    ];
+
+    public function columns()
+    {
+        return $this->hasMany(ModuleTableColumn::class, 'module_table_id');
+    }
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'module_id');
+    }
+}
+

@@ -10,8 +10,10 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -27,14 +29,15 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        FilamentAsset::register([
+            Css::make('custom', asset('css/filament/filament/theme.css')),
+        ]);
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->login()
-            ->colors([
-                'primary' => Color::Amber,
-            ])
+
             ->maxContentWidth(Width::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -59,8 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
-                ModuleConnectService::make(),
-                FilTheme::make()
+                ModuleConnectService::make()
             ])
             ->authMiddleware([
                 Authenticate::class,

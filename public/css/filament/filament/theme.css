@@ -8,6 +8,7 @@
 
 body {
     background-color: #f1f5f9 !important;
+    overflow: hidden !important;
 }
 
 .fi-tabs {
@@ -51,10 +52,9 @@ body:where(.dark , .dark *) {
 
     margin: 10px 0 10px 10px !important;
     border-radius: var(--border-radius) !important;
-    /*border-radius: 0 var(--border-radius) 0 var(--border-radius) !important;*/
     background-color: #fff !important;
     box-shadow: 0 0.1875rem 0.75rem 0 rgba(19, 17, 32, 0.2) !important;
-    height: calc(100vh - 20px) !important;
+    height: calc(100vh - 90px) !important;
 
 
 }
@@ -84,7 +84,7 @@ body:where(.dark , .dark *) {
 }
 
 .fi-topbar {
-    margin: 10px 10px 10px 10px !important;
+    margin: 10px 10px 0px 10px !important;
     border-radius: var(--border-radius) !important;
     box-shadow: 0 0.1875rem 0.75rem 0 rgba(19, 17, 32, 0.2) !important;
 }
@@ -136,7 +136,12 @@ body:where(.dark , .dark *) {
 
 .fi-main {
     padding: 0 10px !important;
-    height: calc(100vh - 100px);
+    height: auto !important;
+}
+
+.fi-main-ctn {
+    height: calc(100vh - 90px) !important;
+    overflow-y: auto !important;
 }
 
 .dark\:bg-gray-900:is(.dark *) {

@@ -29,9 +29,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        FilamentAsset::register([
-            Css::make('custom', asset('css/filament/filament/theme.css')),
-        ]);
+
         return $panel
             ->default()
             ->id('admin')
@@ -49,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
+            ->sidebarWidth(width: '16rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -62,7 +61,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
-                ModuleConnectService::make()
+                ModuleConnectService::make(),
+                FilTheme::make()
             ])
             ->authMiddleware([
                 Authenticate::class,

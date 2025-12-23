@@ -31,23 +31,26 @@ class AdminPanelProvider extends PanelProvider
     {
 
         return $panel
+            ->spa()
+            ->login()
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-
+            ->sidebarWidth(width: '16rem')
             ->maxContentWidth(Width::Full)
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->authMiddleware([
+                Authenticate::class,
+            ])
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
-            ->sidebarWidth(width: '16rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -63,9 +66,6 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
                 ModuleConnectService::make(),
                 FilTheme::make()
-            ])
-            ->authMiddleware([
-                Authenticate::class,
             ]);
     }
 }

@@ -181,6 +181,9 @@ class ManageTranslations extends Page implements HasTable
     public function getTableRecords(): EloquentCollection|Paginator|CursorPaginator
     {
         $rows = collect($this->translationService()->getTableRows());
+        $rows = $this->applySearchToRows($rows);
+        $rows = $this->applyOrderingToRows($rows);
+
         $groupCounts = $rows
             ->groupBy('group')
             ->map(fn (Collection $items): int => $items->count());
@@ -190,7 +193,6 @@ class ManageTranslations extends Page implements HasTable
 
             return $row;
         });
-        $rows = $this->applySearchToRows($rows);
 
         $records = $rows
             ->map(fn (array $row): TranslationEntry => TranslationEntry::fromArray($row))
@@ -253,6 +255,65 @@ class ManageTranslations extends Page implements HasTable
 
             return false;
         });
+    }
+
+    protected function applyOrderingToRows(Collection $rows): Collection
+    {
+        $grouping = $this->getTableGrouping();
+        $groupColumn = $grouping?->getColumn() ?? 'group';
+        $groupDirection = $this->getTableGroupingDirection() ?? 'asc';
+        $sortColumn = $this->getTableSortColumn();
+        $sortDirection = $this->getTableSortDirection() ?? 'asc';
+        $groupCounts = $rows
+            ->groupBy($groupColumn)
+            ->map(fn (Collection $items): int => $items->count());
+
+        return $rows
+            ->sort(function (array $a, array $b) use ($groupColumn, $groupDirection, $groupCounts, $sortColumn, $sortDirection): int {
+                $countComparison = $this->compareNumbers(
+                    $groupCounts[$a[$groupColumn] ?? null] ?? 0,
+                    $groupCounts[$b[$groupColumn] ?? null] ?? 0,
+                    $groupDirection
+                );
+
+                if ($countComparison !== 0) {
+                    return $countComparison;
+                }
+
+                $groupComparison = $this->compareValues($a[$groupColumn] ?? null, $b[$groupColumn] ?? null, 'asc');
+
+                if ($groupComparison !== 0) {
+                    return $groupComparison;
+                }
+
+                if ($sortColumn) {
+                    $columnComparison = $this->compareValues($a[$sortColumn] ?? null, $b[$sortColumn] ?? null, $sortDirection);
+
+                    if ($columnComparison !== 0) {
+                        return $columnComparison;
+                    }
+                }
+
+                return $this->compareValues($a['key'] ?? null, $b['key'] ?? null, 'asc');
+            })
+            ->values();
+    }
+
+    private function compareValues(mixed $left, mixed $right, string $direction): int
+    {
+        $left = $left ?? '';
+        $right = $right ?? '';
+
+        $result = strnatcasecmp((string) $left, (string) $right);
+
+        return $direction === 'desc' ? -$result : $result;
+    }
+
+    private function compareNumbers(int|float $left, int|float $right, string $direction): int
+    {
+        $result = $left <=> $right;
+
+        return $direction === 'desc' ? -$result : $result;
     }
 
     protected function getExistingKeys(?string $group = null): array

@@ -14,8 +14,6 @@ class TranslationEntry extends Model
 {
     protected $table = 'translations';
 
-    protected $primaryKey = 'key';
-
     protected $keyType = 'string';
 
     public $incrementing = false;
@@ -24,11 +22,31 @@ class TranslationEntry extends Model
 
     protected $guarded = [];
 
+    protected $appends = ['id'];
+
     public static function fromArray(array $attributes): self
     {
         /** @var self $model */
         $model = (new self())->forceFill($attributes);
 
         return $model;
+    }
+
+    public function getIdAttribute(): string
+    {
+        return $this->buildCompositeKey();
+    }
+
+    public function getKey(): string
+    {
+        return $this->buildCompositeKey();
+    }
+
+    private function buildCompositeKey(): string
+    {
+        $group = (string) $this->getAttribute('group');
+        $key = (string) $this->getAttribute('key');
+
+        return "{$group}::{$key}";
     }
 }

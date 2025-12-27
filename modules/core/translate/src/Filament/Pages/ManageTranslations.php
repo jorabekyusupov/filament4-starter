@@ -77,7 +77,15 @@ class ManageTranslations extends Page implements HasTable
         return [
             Group::make('group')
                 ->label(__('group'))
-                ->getTitleFromRecordUsing(fn (TranslationEntry $record): string => __($record->getAttribute('group'))),
+                ->collapsible()
+                ->getTitleFromRecordUsing(
+                    fn (TranslationEntry $record): string => __('source') . ': ' . __($record->getAttribute('group'))
+                )
+                ->getDescriptionFromRecordUsing(
+                    fn (TranslationEntry $record): string => __(':count keys', [
+                        'count' => (int) $record->getAttribute('group_count'),
+                    ])
+                ),
         ];
     }
 
@@ -89,6 +97,14 @@ class ManageTranslations extends Page implements HasTable
     protected function getTableColumns(): array
     {
         $columns = [
+            TextColumn::make('group')
+                ->label(__('group'))
+                ->badge()
+                ->formatStateUsing(fn (?string $state): string => __('source') . ': ' . __($state ?? ''))
+                ->color(fn (?string $state): string => $state === TranslationService::MAIN_GROUP ? 'gray' : 'primary')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable()
+                ->searchable(),
             TextColumn::make('key')
                 ->label(__('key'))
                 ->searchable()
@@ -166,6 +182,15 @@ class ManageTranslations extends Page implements HasTable
     public function getTableRecords(): EloquentCollection|Paginator|CursorPaginator
     {
         $rows = collect($this->translationService()->getTableRows());
+        $groupCounts = $rows
+            ->groupBy('group')
+            ->map(fn (Collection $items): int => $items->count());
+
+        $rows = $rows->map(function (array $row) use ($groupCounts): array {
+            $row['group_count'] = $groupCounts[$row['group']] ?? 0;
+
+            return $row;
+        });
         $rows = $this->applySearchToRows($rows);
 
         $records = $rows
@@ -182,13 +207,17 @@ class ManageTranslations extends Page implements HasTable
         }
 
         return $this->cachedTableRecords?->first(function (Model $record) use ($key): bool {
-            return $this->getRecordIdentifier($record) === (string) $key;
+            return (string) $record->getKey() === (string) $key;
         });
     }
 
     public function getTableRecordKey(Model|array $record): string
     {
-        return $this->getRecordIdentifier($record);
+        if ($record instanceof Model) {
+            return (string) $record->getKey();
+        }
+
+        return (string) data_get($record, 'id', data_get($record, 'key'));
     }
 
     public function getAllTableRecordsCount(): int
@@ -250,12 +279,5 @@ class ManageTranslations extends Page implements HasTable
     private function translationService(): TranslationService
     {
         return app(TranslationService::class);
-    }
-
-    private function getRecordIdentifier(Model|array $record): string
-    {
-        $group = data_get($record, 'group', '');
-
-        return $group . '::' . data_get($record, 'key');
     }
 }

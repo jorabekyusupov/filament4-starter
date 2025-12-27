@@ -1,18 +1,19 @@
 <?php
 
-namespace Modules\Translate\Filament\Pages;
+declare(strict_types=1);
 
+namespace Modules\Translate\Filament\Pages;
 
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Page;
-
 use Filament\Schemas\Components\Grid;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Grouping\Group;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Contracts\Support\Htmlable;
@@ -28,7 +29,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ManageTranslations extends Page implements HasTable
 {
-    use InteractsWithTable,HasPageShield;
+    use InteractsWithTable, HasPageShield;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-language';
 
@@ -71,6 +72,20 @@ class ManageTranslations extends Page implements HasTable
         return TranslationEntry::query();
     }
 
+    protected function getTableGroups(): array
+    {
+        return [
+            Group::make('group')
+                ->label(__('group'))
+                ->getTitleFromRecordUsing(fn (TranslationEntry $record): string => __($record->getAttribute('group'))),
+        ];
+    }
+
+    protected function getDefaultTableGroup(): ?string
+    {
+        return 'group';
+    }
+
     protected function getTableColumns(): array
     {
         $columns = [
@@ -88,6 +103,7 @@ class ManageTranslations extends Page implements HasTable
                         $locale,
                         $record->getAttribute('key'),
                         $state,
+                        $record->getAttribute('group'),
                     );
 
                     $record->setAttribute($locale, $state ?? null);
@@ -115,7 +131,7 @@ class ManageTranslations extends Page implements HasTable
                                 ->label(__('key'))
                                 ->required()
                                 ->maxLength(255)
-                                ->rule(fn () => Rule::notIn($this->getExistingKeys()))
+                                ->rule(fn () => Rule::notIn($this->getExistingKeys(TranslationService::MAIN_GROUP)))
                                 ->validationMessages([
                                     'not_in' => __('This key already exists.'),
                                 ]),
@@ -129,6 +145,7 @@ class ManageTranslations extends Page implements HasTable
                         $targetLocale,
                         $data['key'],
                         $data['value'] ?? '',
+                        TranslationService::MAIN_GROUP,
                     );
 
                     $this->resetTable();
@@ -164,14 +181,14 @@ class ManageTranslations extends Page implements HasTable
             $this->getTableRecords();
         }
 
-        return $this->cachedTableRecords?->first(
-            fn (Model $record): bool => (string) $record->getAttribute('key') === (string) $key
-        );
+        return $this->cachedTableRecords?->first(function (Model $record) use ($key): bool {
+            return $this->getRecordIdentifier($record) === (string) $key;
+        });
     }
 
     public function getTableRecordKey(Model|array $record): string
     {
-        return (string) $record->getAttribute('key');
+        return $this->getRecordIdentifier($record);
     }
 
     public function getAllTableRecordsCount(): int
@@ -194,6 +211,10 @@ class ManageTranslations extends Page implements HasTable
                 return true;
             }
 
+            if (isset($row['group']) && Str::contains(Str::lower($row['group']), $needle)) {
+                return true;
+            }
+
             foreach ($this->locales as $locale) {
                 $value = $row[$locale] ?? null;
 
@@ -206,10 +227,12 @@ class ManageTranslations extends Page implements HasTable
         });
     }
 
-    protected function getExistingKeys(): array
+    protected function getExistingKeys(?string $group = null): array
     {
         return collect($this->translationService()->getTableRows())
+            ->when($group, fn (Collection $rows) => $rows->where('group', $group))
             ->pluck('key')
+            ->unique()
             ->all();
     }
 
@@ -227,5 +250,12 @@ class ManageTranslations extends Page implements HasTable
     private function translationService(): TranslationService
     {
         return app(TranslationService::class);
+    }
+
+    private function getRecordIdentifier(Model|array $record): string
+    {
+        $group = data_get($record, 'group', '');
+
+        return $group . '::' . data_get($record, 'key');
     }
 }

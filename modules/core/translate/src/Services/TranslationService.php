@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Translate\Services;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use JsonException;
 use RuntimeException;
@@ -10,6 +13,13 @@ use ZipArchive;
 
 class TranslationService
 {
+    public const MAIN_GROUP = 'main';
+
+    /**
+     * @var array<int, array{group: string, path: string}>
+     */
+    private array $translationSources = [];
+
     /**
      * Build the table rows by unifying keys from all locale JSON files.
      *
@@ -19,37 +29,44 @@ class TranslationService
     {
         $locales = getLocales();
 
-        $translations = collect($locales)
-            ->mapWithKeys(function (string $locale): array {
-                return [$locale => $this->readLocaleFile($locale)];
-            });
+        return collect($this->getTranslationSources())
+            ->flatMap(function (array $source) use ($locales) {
+                $translations = collect($locales)
+                    ->mapWithKeys(function (string $locale) use ($source): array {
+                        return [$locale => $this->readLocaleFile($locale, $source['path'])];
+                    });
 
-        $keys = $translations
-            ->map(fn (array $items): array => array_keys($items))
-            ->flatten()
-            ->unique()
-            ->sort()
-            ->values();
+                $keys = $translations
+                    ->map(fn (array $items): array => array_keys($items))
+                    ->flatten()
+                    ->unique()
+                    ->sort()
+                    ->values();
 
-        return $keys
-            ->map(function (string $key) use ($locales, $translations): array {
-                $row = ['key' => $key];
+                return $keys->map(function (string $key) use ($locales, $translations, $source): array {
+                    $row = [
+                        'group' => $source['group'],
+                        'key' => $key,
+                    ];
 
-                foreach ($locales as $locale) {
-                    $row[$locale] = $translations[$locale][$key] ?? null;
-                }
+                    foreach ($locales as $locale) {
+                        $row[$locale] = $translations[$locale][$key] ?? null;
+                    }
 
-                return $row;
+                    return $row;
+                });
             })
+            ->values()
             ->all();
     }
 
-    public function updateTranslation(string $locale, string $key, ?string $value): void
+    public function updateTranslation(string $locale, string $key, ?string $value, string $group = self::MAIN_GROUP): void
     {
-        $translations = $this->readLocaleFile($locale);
+        $path = $this->resolveGroupPath($group);
+        $translations = $this->readLocaleFile($locale, $path);
         $translations[$key] = $value ?? '';
 
-        $this->writeLocaleFile($locale, $translations);
+        $this->writeLocaleFile($locale, $translations, $path);
     }
 
     public function createZip(): BinaryFileResponse
@@ -78,9 +95,80 @@ class TranslationService
             ->deleteFileAfterSend(true);
     }
 
-    private function readLocaleFile(string $locale): array
+    /**
+     * @return array<int, array{group: string, path: string}>
+     */
+    private function getTranslationSources(): array
     {
-        $path = $this->getLocalePath($locale);
+        if ($this->translationSources !== []) {
+            return $this->translationSources;
+        }
+
+        $this->translationSources = collect([
+            [
+                'group' => self::MAIN_GROUP,
+                'path' => lang_path(),
+            ],
+        ])
+            ->concat($this->discoverModuleSources())
+            ->unique('group')
+            ->values()
+            ->all();
+
+        return $this->translationSources;
+    }
+
+    /**
+     * @return array<int, array{group: string, path: string}>
+     */
+    private function discoverModuleSources(): array
+    {
+        $moduleRoots = collect(['modules', 'Modules'])
+            ->map(fn (string $directory): string => base_path($directory))
+            ->filter(fn (string $path): bool => File::isDirectory($path));
+
+        if ($moduleRoots->isEmpty()) {
+            return [];
+        }
+
+        return $moduleRoots
+            ->flatMap(fn (string $root): array => File::directories($root))
+            ->flatMap(function (string $layerPath): Collection {
+                return collect(File::directories($layerPath))
+                    ->map(function (string $modulePath): ?array {
+                        $langPath = $modulePath . DIRECTORY_SEPARATOR . 'lang';
+
+                        if (! File::isDirectory($langPath)) {
+                            return null;
+                        }
+
+                        return [
+                            'group' => basename($modulePath),
+                            'path' => $langPath,
+                        ];
+                    })
+                    ->filter()
+                    ->values();
+            })
+            ->values()
+            ->all();
+    }
+
+    private function resolveGroupPath(string $group): string
+    {
+        $path = collect($this->getTranslationSources())
+            ->firstWhere('group', $group)['path'] ?? null;
+
+        if ($path === null) {
+            throw new RuntimeException("Unknown translation group [{$group}].");
+        }
+
+        return $path;
+    }
+
+    private function readLocaleFile(string $locale, string $directory): array
+    {
+        $path = $this->getLocalePath($locale, $directory);
 
         if (! File::exists($path)) {
             return [];
@@ -101,9 +189,11 @@ class TranslationService
         return is_array($decoded) ? $decoded : [];
     }
 
-    private function writeLocaleFile(string $locale, array $translations): void
+    private function writeLocaleFile(string $locale, array $translations, string $directory): void
     {
-        $path = $this->getLocalePath($locale);
+        File::ensureDirectoryExists($directory);
+
+        $path = $this->getLocalePath($locale, $directory);
 
         ksort($translations);
 
@@ -116,8 +206,8 @@ class TranslationService
         File::put($path, $encoded . PHP_EOL, true);
     }
 
-    private function getLocalePath(string $locale): string
+    private function getLocalePath(string $locale, string $directory): string
     {
-        return lang_path("{$locale}.json");
+        return $directory . DIRECTORY_SEPARATOR . "{$locale}.json";
     }
 }

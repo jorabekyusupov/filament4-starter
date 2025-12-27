@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Translate\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $key
+ * @property string $group
+ */
 class TranslationEntry extends Model
 {
     protected $table = 'translations';

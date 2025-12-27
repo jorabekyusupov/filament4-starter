@@ -21,6 +21,27 @@ function getLocaleLabels(): array
 
 }
 
+function getNumberLocale(?string $locale = null): string
+{
+    $locale ??= app()->getLocale();
+
+    $mappedLocale = [
+        // `oz` (Latin Uzbek) is not recognised by PHP's intl NumberFormatter,
+        // so map it to the ICU-compatible locale code.
+        'oz' => 'uz_Latn',
+    ][$locale] ?? $locale;
+
+    try {
+        new \NumberFormatter($mappedLocale, \NumberFormatter::DECIMAL);
+
+        return $mappedLocale;
+    } catch (\Throwable) {
+        $fallback = config('app.fallback_locale', 'en');
+
+        return $fallback !== $mappedLocale ? getNumberLocale($fallback) : 'en';
+    }
+}
+
 function filterNullAndEmpty(array $data): array
 {
     return array_filter($data, static function ($value, $key) {

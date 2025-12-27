@@ -13,6 +13,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Pagination\CursorPaginator;
@@ -71,6 +73,7 @@ class ManageTranslations extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
+            ->filters($this->getTableFilters(),FiltersLayout::AboveContent)
             ->groups([
                 Group::make('group')
                     ->label(__('group'))
@@ -173,6 +176,16 @@ class ManageTranslations extends Page implements HasTable
         ];
     }
 
+    protected function getTableFilters(): array
+    {
+        return [
+            SelectFilter::make('group')
+                ->label(__('group'))
+                ->options($this->getGroupOptions())
+                ->placeholder(__('all')),
+        ];
+    }
+
     protected function isTablePaginationEnabled(): bool
     {
         return false;
@@ -181,6 +194,7 @@ class ManageTranslations extends Page implements HasTable
     public function getTableRecords(): EloquentCollection|Paginator|CursorPaginator
     {
         $rows = collect($this->translationService()->getTableRows());
+        $rows = $this->applyFiltersToRows($rows);
         $rows = $this->applySearchToRows($rows);
         $rows = $this->applyOrderingToRows($rows);
 
@@ -199,6 +213,17 @@ class ManageTranslations extends Page implements HasTable
             ->values();
 
         return $this->cachedTableRecords = new EloquentCollection($records);
+    }
+
+    protected function applyFiltersToRows(Collection $rows): Collection
+    {
+        $groupFilter = $this->getTableFilterState('group')['value'] ?? null;
+
+        if (blank($groupFilter)) {
+            return $rows;
+        }
+
+        return $rows->where('group', $groupFilter)->values();
     }
 
     public function getTableRecord(?string $key): Model|array|null
@@ -339,5 +364,15 @@ class ManageTranslations extends Page implements HasTable
     private function translationService(): TranslationService
     {
         return app(TranslationService::class);
+    }
+
+    private function getGroupOptions(): array
+    {
+        return collect($this->translationService()->getTableRows())
+            ->pluck('group')
+            ->unique()
+            ->sort()
+            ->mapWithKeys(fn (string $group): array => [$group => __($group)])
+            ->all();
     }
 }

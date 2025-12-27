@@ -24,6 +24,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jora\FilTheme\FilTheme;
 use Modules\MakerModule\Services\ModuleConnectService;
+use Modules\User\Filament\Pages\CustomLogin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -32,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel
             ->spa()
-            ->login()
+            ->login(action: CustomLogin::class)
             ->default()
             ->id('admin')
             ->path('admin')

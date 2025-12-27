@@ -11,8 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware
+            ->alias([
+                'basic-auth' => \Modules\Application\Middleware\BasicAuthMiddleware::class,
+            ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->report(function (Throwable $e) {
+            if (!app()->isProduction() && !app()->isLocal()) {
+                app(\App\Services\ExceptionSenderService::class)->errorSend($e);
+            }
+        });
         //
-    })->create();
+    })
+    ->create();

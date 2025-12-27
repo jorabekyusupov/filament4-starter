@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'application-rpc' => [
+            'driver' => 'session',
+            'provider' => 'applications',
+        ],
     ],
 
     /*
@@ -64,7 +68,10 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', \Modules\User\Models\User::class),
         ],
-
+        'applications' => [
+            'driver' => 'eloquent',
+            'model' => \Modules\Application\Models\Application::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Console\Events\CommandStarting;
 use Jora\Modular\Console\Commands\Make\MakeModule;
+use Modules\MakerModule\Commands\AppFreshCommand;
+use Modules\MakerModule\Commands\SyncModuleCommand;
 use Modules\MakerModule\Seeders\MakerModuleSeeder;
 
 
@@ -34,7 +36,9 @@ class MakerModuleServiceProvider extends BaseServiceProvider
 //            }
 //        });
         $this->commands([
-            MakeModule::class
+            MakeModule::class,
+            AppFreshCommand::class,
+            SyncModuleCommand::class
         ]);
     }
 }

@@ -596,7 +596,7 @@ border-radius: 8px;
     font-size: 0.9375rem !important;
     font-weight: 500 !important;
     line-height: 1.375 !important;
-    color: var(--bs-body-color) !important;
+    color: var(--bs-btn-color) !important;
     background-color: transparent !important;
     box-shadow: none !important;
     transition: all 0.2s ease-in-out !important;

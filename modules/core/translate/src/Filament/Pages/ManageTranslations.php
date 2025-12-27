@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Grouping\Group;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Contracts\Support\Htmlable;
@@ -67,31 +68,29 @@ class ManageTranslations extends Page implements HasTable
         }
     }
 
+    public function table(Table $table): Table
+    {
+        return $table
+            ->groups([
+                Group::make('group')
+                    ->label(__('group'))
+                    ->collapsible()
+                    ->titlePrefixedWithLabel(false)
+                    ->getTitleFromRecordUsing(
+                        fn (TranslationEntry $record): string => __('source') . ': ' . __($record->getAttribute('group'))
+                    )
+                    ->getDescriptionFromRecordUsing(
+                        fn (TranslationEntry $record): string => __(':count translations', [
+                            'count' => (int) $record->getAttribute('group_count'),
+                        ])
+                    ),
+            ])
+            ->defaultGroup('group');
+    }
+
     protected function getTableQuery(): Builder
     {
         return TranslationEntry::query();
-    }
-
-    protected function getTableGroups(): array
-    {
-        return [
-            Group::make('group')
-                ->label(__('group'))
-                ->collapsible()
-                ->getTitleFromRecordUsing(
-                    fn (TranslationEntry $record): string => __('source') . ': ' . __($record->getAttribute('group'))
-                )
-                ->getDescriptionFromRecordUsing(
-                    fn (TranslationEntry $record): string => __(':count keys', [
-                        'count' => (int) $record->getAttribute('group_count'),
-                    ])
-                ),
-        ];
-    }
-
-    protected function getDefaultTableGroup(): ?string
-    {
-        return 'group';
     }
 
     protected function getTableColumns(): array

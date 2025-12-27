@@ -1,3 +1,4 @@
 {
-  "main": "Главная"
+  "source": "Источник",
+  ":count translations": ":count переводов"
 }

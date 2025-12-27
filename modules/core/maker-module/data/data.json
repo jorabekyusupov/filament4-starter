@@ -46,6 +46,13 @@
         "path": "modules\/core\/translate",
         "status": true,
         "stable": true
+    },
+    {
+        "name": "role-permission",
+        "source": "admin",
+        "namespace": "Modules\\RolePermission",
+        "path": "modules\/core\/role-permission",
+        "status": true,
+        "stable": false
     }
-
 ]

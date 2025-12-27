@@ -17,9 +17,9 @@ return [
 	| If you set the namespace, you should also set the vendor name to match.
 	|
 	*/
-	
+
 	'modules_namespace' => 'Modules',
-	
+
 	/*
 	|--------------------------------------------------------------------------
 	| Composer "Vendor" Name
@@ -30,9 +30,9 @@ return [
 	| generate the kebab-case version for you).
 	|
 	*/
-	
+
 	'modules_vendor' => null,
-	
+
 	/*
 	|--------------------------------------------------------------------------
 	| Modules Directory
@@ -44,9 +44,9 @@ return [
 	| in an alpha-sorted directory listing.
 	|
 	*/
-	
-	'modules_directory' => 'app-modules',
-	
+
+	'modules_directory' => 'modules',
+
 	/*
 	|--------------------------------------------------------------------------
 	| Base Test Case
@@ -56,9 +56,9 @@ return [
 	| extend. By default it assumes the default \Tests\TestCase exists.
 	|
 	*/
-	
+
 	'tests_base' => 'Tests\TestCase',
-	
+
 	/*
 	|--------------------------------------------------------------------------
 	| Custom Stubs
@@ -76,9 +76,9 @@ return [
 	| 	'src/Providers/StubClassNamePrefixServiceProvider.php' => base_path('stubs/app-modules/ServiceProvider.php'),
 	| ],
 	*/
-	
+
 	'stubs' => null,
-	
+
 	/*
 	|--------------------------------------------------------------------------
 	| Custom override of event discovery
@@ -89,6 +89,6 @@ return [
 	| discovery, set this to true. We will still check the app namespace for
 	| the presence of event discovery.
 	*/
-	
+
 	'should_discover_events' => null,
 ];

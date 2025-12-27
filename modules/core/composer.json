@@ -9,7 +9,8 @@
             "Modules\\Language\\": "language/src",
             "Modules\\Organization\\": "organization/src",
             "Modules\\Application\\": "application/src",
-            "Modules\\Translate\\": "translate/src"
+            "Modules\\Translate\\": "translate/src",
+            "Modules\\RolePermission\\": "role-permission/src"
         }
     },
     "minimum-stability": "stable",
@@ -22,7 +23,8 @@
                 "Modules\\Language\\Providers\\LanguageServiceProvider",
                 "Modules\\Organization\\Providers\\OrganizationServiceProvider",
                 "Modules\\Application\\Providers\\ApplicationServiceProvider",
-                "Modules\\Translate\\Providers\\TranslateServiceProvider"
+                "Modules\\Translate\\Providers\\TranslateServiceProvider",
+                "Modules\\RolePermission\\Providers\\RolePermissionServiceProvider"
             ]
         }
     }

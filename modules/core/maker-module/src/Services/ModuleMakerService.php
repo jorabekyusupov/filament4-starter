@@ -54,9 +54,16 @@ class ModuleMakerService
                     $status ? [['name' => 'status', 'type' => 'boolean']] : []
                 );
 
+                // Prepare columns with full metadata
+                $columnsAssociative = [];
+                foreach ($columns as $col) {
+                    $columnsAssociative[$col['name']] = $col;
+                }
+                
                 $columnsForMigration = array_combine(array_column($columns, 'name'), array_column($columns, 'type'));
-                $this->createMigrationFile($commandName, $tableName, $columnsForMigration);
-                $this->createModelFile($commandName, $data['name'], $tableName, $columnsForMigration, $softDeletes);
+
+                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); // Migration can still use simple map for now or updated later
+                $this->createModelFile($commandName, $data['name'], $tableName, $columnsAssociative, $softDeletes);
 
                 // Add Filament Resource creation if has_resource is true
                 if ($table['has_resource'] ?? false) {
@@ -69,7 +76,7 @@ class ModuleMakerService
                     $tableLayout = collect($data['resource_layouts'] ?? [])->firstWhere('table_name', $tableName);
                     $layoutSchema = $tableLayout['schema'] ?? [];
 
-                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsForMigration, $layoutSchema);
+                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsAssociative, $layoutSchema);
                 }
 
                 foreach ($columnsForMigration as $columnName => $columnType) {
@@ -240,7 +247,19 @@ class ModuleMakerService
         }
 
         $columnsContent = collect($columns)
-            ->map(fn($type, $column) => "            \$table->{$type}('{$column}');")
+            ->map(function ($type, $column) {
+                if ($type === 'foreignId') {
+                    // Extract model from column name (e.g. user_id -> users) or use metadata if available
+                    // For now, assuming simple foreignId('user_id')->constrained() or constrained('users')
+                    // Since we don't pass full metadata here yet, we need to update how createMigrationFile receives data
+                    // But wait, createMigrationFile receives $columns which is name => type.
+                    // We need to pass full column data to support this properly.
+                    // For now, let's just do generic constrained if possible, or leave as bigInteger if we can't infer.
+                    // Actually, let's just return foreignId for now, we will refine this when we pass full data.
+                    return "            \$table->foreignId('{$column}')->constrained();"; 
+                }
+                 return "            \$table->{$type}('{$column}');";
+            })
             ->implode("\n");
         $migrationFileContent = str_replace(array('StubModuleName', '//columns'), array(Str::plural($tableName), $columnsContent), $stub);
         $migrationFileContent = preg_replace('/\n\s*\n/', "\n", $migrationFileContent);
@@ -279,14 +298,60 @@ class ModuleMakerService
             );
         }
 
-        file_put_contents($modelFile, $modelFileContent);
-
-        $castsContent = collect($this->castsConvertByColumnTypes($columns))
-            ->map(fn($type, $column) => "        '{$column}' => '{$type}',")
+        // Generate Casts
+        $castsContent = collect($columns)
+            ->filter(fn($data) => in_array(is_array($data) ? $data['type'] : $data, ['boolean', 'date', 'datetime', 'timestamp', 'json', 'array', 'object', 'collection']))
+            ->map(function ($data, $column) {
+                $type = is_array($data) ? $data['type'] : $data;
+                $castType = match ($type) {
+                    'boolean' => 'boolean',
+                    'date' => 'date',
+                    'datetime', 'timestamp' => 'datetime',
+                    'json', 'jsonb' => 'array',
+                    default => 'string',
+                };
+                return "        '{$column}' => '{$castType}',";
+            })
             ->implode("\n");
         $castsContent = trim($castsContent, ",\n");
 
         $modelFileContent = str_replace('castsContent', $castsContent, $modelFileContent);
+
+        // Generate relationships
+        $relationships = "";
+        foreach ($columns as $columnName => $data) {
+            $columnType = is_array($data) ? $data['type'] : $data;
+            
+            if ($columnType === 'foreignId') {
+                $metadata = is_array($data) ? $data : [];
+                $specifiedModel = $metadata['related_model'] ?? null;
+
+                // Infer relationship name: user_id -> user
+                $relationName = Str::camel(str_replace('_id', '', $columnName));
+                
+                if ($specifiedModel) {
+                    // Use FQCN directly: belongsTo(\Modules\Core\Models\User::class)
+                    // If specifiedModel is just "User" (legacy input), studly case it
+                    if (str_contains($specifiedModel, '\\')) {
+                         $relatedClass = "\\{$specifiedModel}";
+                    } else {
+                         // Fallback for simple name (assumes same namespace or standard alias, risky but handles old inputs)
+                         $relatedClass = Str::studly($specifiedModel);
+                    }
+                     $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedClass}::class);\n    }\n";
+                } else {
+                    // Infer related model class (namespace needs to be handled if across modules, simplified for now)
+                    // Assuming related model name is StudlyCase of relation name
+                    $relatedModelName = Str::studly($relationName);
+                    $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedModelName}::class);\n    }\n";
+                }
+            }
+        }
+        
+        // Append relationships before closing bracket
+        // Current stub ends with }
+        $modelFileContent = substr(trim($modelFileContent), 0, -1) . $relationships . "\n}";
+
         file_put_contents($modelFile, $modelFileContent);
 
         // Create Policy file
@@ -326,6 +391,53 @@ class ModuleMakerService
         );
 
         file_put_contents($policyFile, $policyFileContent);
+    }
+
+    public function getAvailableModels(): array
+    {
+        $models = [];
+        $modulesPath = base_path('modules');
+
+        if (!is_dir($modulesPath)) {
+            return [];
+        }
+
+        $files = \Symfony\Component\Finder\Finder::create()
+            ->in($modulesPath)
+            ->files()
+            ->name('*.php')
+            ->path('src/Models')
+            ->notPath('vendor'); // Exclusion just in case
+
+        foreach ($files as $file) {
+            $content = file_get_contents($file->getRealPath());
+            
+            // Extract Namespace
+            if (preg_match('/namespace\s+(.+?);/', $content, $nsMatches)) {
+                $namespace = $nsMatches[1];
+                
+                // Extract Class Name
+                if (preg_match('/class\s+(\w+)/', $content, $classMatches)) {
+                    $className = $classMatches[1];
+                    $fullClass = $namespace . '\\' . $className;
+                    
+                    // Determine Group (Module Name)
+                    // Path example: .../modules/core/user/src/Models/User.php
+                    // Relative path: core/user/src/Models/User.php
+                    $relativePath = $file->getRelativePathname();
+                    
+                    // Extract module part: core/user or region
+                    // Remove /src/Models/User.php
+                    $modulePath = str_replace('/src/Models/' . $file->getFilename(), '', $relativePath);
+                    // Convert to title case for label: core/user -> Core/User
+                    $groupLabel = Str::title(str_replace('/', ' / ', $modulePath));
+                    
+                    $models[$groupLabel][$fullClass] = $className; // Store as FQCN => Name
+                }
+            }
+        }
+        
+        return $models;
     }
 
     public function getDataTypes($search = null)
@@ -370,6 +482,7 @@ class ModuleMakerService
             'set' => 'set',
             'morphs' => 'morphs',
             'nullableMorphs' => 'nullableMorphs',
+            'foreignId' => 'foreignId',
             'rememberToken' => 'rememberToken',
         ])
             ->map(function ($value, $key) {
@@ -386,8 +499,12 @@ class ModuleMakerService
         // If no builder blocks, fallback to simple list of all columns
         if (empty($builderBlocks)) {
             $fields = [];
-            foreach ($columns as $name => $type) {
-                $fields[] = $this->getFieldString($name, $type);
+            foreach ($columns as $name => $data) {
+                // $data can be string (legacy) or array (new)
+                // If string, it's just type. If array, it has type, name, etc.
+                $type = is_array($data) ? $data['type'] : $data;
+                $metadata = is_array($data) ? $data : [];
+                $fields[] = $this->getFieldString($name, $type, $metadata);
             }
             return implode("\n                ", $fields);
         }
@@ -406,7 +523,10 @@ class ModuleMakerService
                     if ($isTranslatable && $colName) {
                         $components[] = "...getNameInputsFilament('{$colName}')";
                     } elseif ($colName && isset($columns[$colName])) {
-                        $components[] = $this->getFieldString($colName, $columns[$colName]);
+                        $colData = $columns[$colName];
+                        $colType = is_array($colData) ? $colData['type'] : $colData;
+                        $colMeta = is_array($colData) ? $colData : [];
+                        $components[] = $this->getFieldString($colName, $colType, $colMeta);
                     } elseif ($colName) {
                          // Fallback if type not found (shouldn't happen if validated)
                         $components[] = $this->getFieldString($colName, 'string');
@@ -468,9 +588,28 @@ class ModuleMakerService
         return implode(",\n                ", $components);
     }
 
-    private function getFieldString($name, $type): string
+    private function getFieldString($name, $type, $metadata = []): string
     {
         $label = Str::headline($name);
+        
+        // Relationship handling
+        if ($type === 'foreignId') {
+            $relatedModel = $metadata['related_model'] ?? null;
+            $relatedColumn = $metadata['related_column'] ?? 'name';
+            
+            if (!$relatedModel) {
+                 // Try to infer if missing
+                 $relatedModel = Str::studly(str_replace('_id', '', $name));
+            }
+            
+            // Name for Select::make should be the column name (e.g. author_id)
+            // But relationship method name usually: author
+            // Filament Select::make('author_id')->relationship('author', 'name')
+            // Infer relation name from column: user_id -> user
+            $relationName = Str::camel(str_replace('_id', '', $name));
+
+            return "\Filament\Forms\Components\Select::make('{$name}')\n                    ->label('{$label}')\n                    ->relationship('{$relationName}', '{$relatedColumn}')\n                    ->searchable()\n                    ->preload()";
+        }
         
         // Basic type mapping
         switch ($type) {

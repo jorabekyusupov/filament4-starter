@@ -406,8 +406,14 @@
                         <template x-if="item.type === 'field'">
                              <div style="background:white; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
                                 <label class="f-label" x-text="item.data.label || item.data.column"></label>
-                                <input type="text" class="f-input" disabled>
-                                <div style="margin-top:8px; font-size:11px; border-top:1px solid #f1f5f9; padding-top:4px;">
+                                <template x-if="item.data.type === 'foreignId'">
+                                    <select class="f-input" disabled><option>Select Relation...</option></select>
+                                </template>
+                                <template x-if="item.data.type !== 'foreignId'">
+                                    <input type="text" class="f-input" disabled>
+                                </template>
+                                
+                                <div x-show="item.data.type !== 'foreignId'" style="margin-top:8px; font-size:11px; border-top:1px solid #f1f5f9; padding-top:4px;">
                                     <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer; color:#64748b;">
                                         <input type="checkbox" x-model="item.data.is_translatable"> 
                                         <span>Translatable (getNameInputsFilament)</span>

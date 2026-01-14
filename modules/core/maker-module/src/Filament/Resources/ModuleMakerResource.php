@@ -151,7 +151,23 @@ class ModuleMakerResource extends Resource
                                                         ->label(__('Column Type'))
                                                         ->required()
                                                         ->searchable()
-                                                        ->options($service->getDataTypes(null)),
+                                                        ->options($service->getDataTypes(null))
+                                                        ->live(),
+                                                    Select::make('related_model')
+                                                        ->label(__('Related Model'))
+                                                        ->placeholder('Select Model')
+                                                        ->helperText(__('Model for relationship'))
+                                                        ->required()
+                                                        ->searchable()
+                                                        ->options($service->getAvailableModels())
+                                                        ->visible(fn (Get $get) => $get('type') === 'foreignId'),
+                                                    TextInput::make('related_column')
+                                                        ->label(__('Related Column'))
+                                                        ->placeholder('name')
+                                                        ->default('name')
+                                                        ->helperText(__('Column to display in select (default: name)'))
+                                                        ->required()
+                                                        ->visible(fn (Get $get) => $get('type') === 'foreignId'),
                                                 ]),
                                         ])
                                         ->defaultItems(1)
@@ -211,10 +227,18 @@ class ModuleMakerResource extends Resource
                                         })
                                         ->key(function (Get $get) {
                                             $tableName = $get('table_name');
-                                            $tables = $get('../../tables') ?? [];
+                                            $tables = $get('../../tables');
+                                            
+                                            // Ensure tables is array
+                                            if (!is_array($tables)) {
+                                                return 'vb-' . $tableName;
+                                            }
+
                                             $tableData = collect($tables)->firstWhere('name', $tableName);
                                             $columns = $tableData['columns'] ?? [];
+                                            
                                             // Force re-render if columns change or table changes
+                                            // We use a checksum of columns to detect changes
                                             return 'vb-' . $tableName . '-' . md5(json_encode($columns));
                                         })
                                         ->columnSpanFull(),

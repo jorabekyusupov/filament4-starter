@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Modules\Translate\Filament\Pages;
 
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
-use Filament\Actions\Action;
-use Filament\Forms\Components\TextInput;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Schemas\Components\Section;
+use Filament\Pages\Page;
+
+use Filament\Actions\Action;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -32,11 +36,14 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ManageTranslations extends Page implements HasTable
 {
-    use InteractsWithTable, HasPageShield;
+    use InteractsWithTable {
+        table as protected baseTable;
+    }
+    use HasPageShield;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-language';
 
-    protected string $view = 'translate::filament.pages.manage-translations';
+    protected  string $view = 'translate::filament.pages.manage-translations';
 
     public function getTitle(): string|Htmlable
     {
@@ -72,8 +79,7 @@ class ManageTranslations extends Page implements HasTable
 
     public function table(Table $table): Table
     {
-        return $table
-            ->filters($this->getTableFilters(),FiltersLayout::AboveContent)
+        return $this->baseTable($table)
             ->groups([
                 Group::make('group')
                     ->label(__('group'))
@@ -88,7 +94,8 @@ class ManageTranslations extends Page implements HasTable
                         ])
                     ),
             ])
-            ->defaultGroup('group');
+            ->defaultGroup('group')
+            ->filtersLayout(FiltersLayout::AboveContent);
     }
 
     protected function getTableQuery(): Builder
@@ -136,6 +143,7 @@ class ManageTranslations extends Page implements HasTable
 
     protected function getTableHeaderActions(): array
     {
+
         $targetLocale = $this->resolveTargetLocale();
 
         return [
@@ -168,11 +176,43 @@ class ManageTranslations extends Page implements HasTable
 
                     $this->resetTable();
                 }),
+            Action::make('statistics')
+                ->label(__('statistics'))
+                ->icon('heroicon-o-chart-bar-square')
+                ->modalWidth(Width::ScreenExtraLarge)
+                ->modalContent(fn () => view('translate::filament.pages.modals.statistics', [
+                    'statistics' => $this->translationService()->getStatistics(),
+                ]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(__('close')),
             Action::make('download')
                 ->label(__('download'))
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('secondary')
-                ->action(fn (): BinaryFileResponse => $this->translationService()->createZip()),
+                ->modalWidth(Width::SixExtraLarge)
+                ->form(function () {
+                    $counts = $this->translationService()->getGroupCounts();
+                    $options = collect($counts)->map(fn ($count, $group) => __($group))->all();
+                    $descriptions = collect($counts)->map(fn ($count) => $count . ' ' . str('string')->plural($count))->all();
+
+                    return [
+                        Section::make(__('Select Modules'))
+                            ->description(__('Choose the modules you want to export. The zip file will be structured by module.'))
+                            ->icon('heroicon-o-square-3-stack-3d')
+                            ->schema([
+                                CheckboxList::make('groups')
+                                    ->hiddenLabel()
+                                    ->options($options)
+                                    ->descriptions($descriptions)
+                                    ->default(array_keys($options))
+                                    ->columns(4)
+                                    ->searchable()
+                                    ->bulkToggleable()
+                                    ->required(),
+                            ]),
+                    ];
+                })
+                ->action(fn (array $data): BinaryFileResponse => $this->translationService()->createZip($data['groups'])),
         ];
     }
 
@@ -226,7 +266,7 @@ class ManageTranslations extends Page implements HasTable
         return $rows->where('group', $groupFilter)->values();
     }
 
-    public function getTableRecord(?string $key): Model|array|null
+    public function getTableRecord(?string $key): ?Model
     {
         if ($this->cachedTableRecords === null) {
             $this->getTableRecords();

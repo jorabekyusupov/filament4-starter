@@ -14,7 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware
             ->alias([
                 'basic-auth' => \Modules\Application\Middleware\BasicAuthMiddleware::class,
-            ]);
+            ])
+        ->appendToGroup('web', [
+     \Modules\Language\Middleware\SetLocaleMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->report(function (Throwable $e) {

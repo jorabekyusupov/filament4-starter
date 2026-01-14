@@ -69,13 +69,60 @@ class TranslationService
         $this->writeLocaleFile($locale, $translations, $path);
     }
 
-    public function createZip(): BinaryFileResponse
+    public function getAvailableGroups(): array
     {
-        $langPath = lang_path();
+        return collect($this->getTranslationSources())
+            ->pluck('group')
+            ->values()
+            ->all();
+    }
+
+    public function getStatistics(): array
+    {
+        $rows = $this->getTableRows();
+        $locales = getLocales();
+
+        return collect($rows)
+            ->groupBy('group')
+            ->map(function (Collection $groupRows, string $group) use ($locales) {
+                $totalKeys = $groupRows->count();
+
+                $stats = collect($locales)->map(function (string $locale) use ($groupRows, $totalKeys) {
+                    $filled = $groupRows->filter(fn (array $row) => ! blank($row[$locale] ?? null))->count();
+                    $percent = $totalKeys > 0 ? round(($filled / $totalKeys) * 100, 1) : 0;
+
+                    return [
+                        'locale' => $locale,
+                        'filled' => $filled,
+                        'total' => $totalKeys,
+                        'percent' => $percent,
+                    ];
+                })->values()->all();
+
+                return [
+                    'group' => $group,
+                    'total_keys' => $totalKeys,
+                    'stats' => $stats,
+                ];
+            })
+            ->sortByDesc('total_keys')
+            ->values()
+            ->all();
+    }
+
+    public function getGroupCounts(): array
+    {
+        return collect($this->getTableRows())
+            ->groupBy('group')
+            ->map(fn (Collection $rows) => $rows->count())
+            ->sortDesc()
+            ->all();
+    }
+
+    public function createZip(array $onlyGroups = []): BinaryFileResponse
+    {
         $zipDirectory = storage_path('app/translations');
-
         File::ensureDirectoryExists($zipDirectory);
-
         $zipFilePath = $zipDirectory . DIRECTORY_SEPARATOR . 'translations_' . now()->format('Ymd_His') . '.zip';
 
         $zip = new ZipArchive();
@@ -84,8 +131,25 @@ class TranslationService
             throw new RuntimeException('Unable to create translations archive.');
         }
 
-        foreach (File::glob($langPath . DIRECTORY_SEPARATOR . '*.json') as $file) {
-            $zip->addFile($file, basename($file));
+        $sources = collect($this->getTranslationSources());
+
+        if ($onlyGroups !== []) {
+            $sources = $sources->whereIn('group', $onlyGroups);
+        }
+
+        foreach ($sources as $source) {
+            $group = $source['group'];
+            $path = $source['path'];
+
+            if (! File::isDirectory($path)) {
+                continue;
+            }
+
+            foreach (File::glob($path . DIRECTORY_SEPARATOR . '*.json') as $file) {
+                // We prefix with group name to avoid collisions if multiple modules have en.json
+                // e.g. main/en.json, module-a/en.json
+                $zip->addFile($file, $group . '/' . basename($file));
+            }
         }
 
         $zip->close();

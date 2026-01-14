@@ -11,11 +11,10 @@ class CreateModuleMaker extends CreateRecord
     protected static string $resource = ModuleMakerResource::class;
 
 
-    protected function getHeaderActions(): array
+
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        return [
-
-        ];
+        $service = new \Modules\MakerModule\Services\ModuleMakerService();
+        return $service->create($data);
     }
-
 }

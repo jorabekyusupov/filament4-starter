@@ -106,6 +106,21 @@ function getChildMainOrganizations(): array
 {
     return array_merge(cache()->get('user_' . auth()->id() . '_first_parent_organization', []), [auth()->user()->organization_id]);
 }
+if (!function_exists('get_intl_locale')) {
+    function get_intl_locale()
+    {
+        $currentLocale = app()->getLocale();
+
+        // Agar locale "oz" bo'lsa, uni standart "uz_Latn" ga o'giramiz
+        if ($currentLocale === 'oz') {
+            return 'uz_Latn';
+        }
+
+        // Qolgan holatlarda o'zini qaytaramiz (ru, en va h.k.)
+        return $currentLocale;
+    }
+}
+
 
 function parsePinfl(string $pinfl): array
 {

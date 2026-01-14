@@ -2,30 +2,32 @@
 
 namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources;
 
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
+use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Tables\Table;
+
 use StubModuleNamespace\StubSubModulePrefix\Models\StubTableName;
 
 class StubTableNameResource extends Resource
 {
     protected static ?string $model = StubTableName::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static string|null|\UnitEnum $navigationGroup = 'Content';
 
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 // Add your form fields here
             ]);
     }
@@ -128,108 +130,4 @@ class StubTableNameResource extends Resource
         ];
     }
 
-    public static function getDefaultTableSortColumn(): ?string
-    {
-        return 'created_at';
-    }
-
-    public static function getDefaultTableSortDirection(): ?string
-    {
-        return 'desc';
-    }
-
-    public static function getTableRecordUrlUsing(): ?\Closure
-    {
-        return null;
-    }
-
-    public static function getTableRecordActionUsing(): ?\Closure
-    {
-        return null;
-    }
-
-    public static function getTableBulkActions(): array
-    {
-        return [
-            // Add bulk actions here
-        ];
-    }
-
-    public static function getTableFilters(): array
-    {
-        return [
-            // Add table filters here
-        ];
-    }
-
-    public static function getTableActions(): array
-    {
-        return [
-            // Add table actions here
-        ];
-    }
-
-    public static function getTableColumns(): array
-    {
-        return [
-            // Add table columns here
-        ];
-    }
-
-    public static function getFormSchema(): array
-    {
-        return [
-            // Add form schema here
-        ];
-    }
-
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
-    {
-        return parent::getEloquentQuery();
-    }
-
-    public static function getResource(): string
-    {
-        return static::class;
-    }
-
-    public static function getModel(): string
-    {
-        return static::$model;
-    }
-
-    public static function getResourcePages(): array
-    {
-        return static::getPages();
-    }
-
-    public static function getResourceRelations(): array
-    {
-        return static::getRelations();
-    }
-
-    public static function getResourceFormSchema(): array
-    {
-        return static::getFormSchema();
-    }
-
-    public static function getResourceTableColumns(): array
-    {
-        return static::getTableColumns();
-    }
-
-    public static function getResourceTableFilters(): array
-    {
-        return static::getTableFilters();
-    }
-
-    public static function getResourceTableActions(): array
-    {
-        return static::getTableActions();
-    }
-
-    public static function getResourceTableBulkActions(): array
-    {
-        return static::getTableBulkActions();
-    }
 }

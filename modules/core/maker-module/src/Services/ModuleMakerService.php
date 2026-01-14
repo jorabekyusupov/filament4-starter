@@ -9,20 +9,27 @@ use Modules\MakerModule\Models\Module;
 
 class ModuleMakerService
 {
+
     public function create(array $data): Module
     {
-        $moduleSlug = Str::slug($data['name']);
-        $studlyModuleName = Str::studly($data['name']);
         $moduleNameArr = explode('/', $data['name']);
-        $tables = $data['tables'] ?? [];
+        
         if (count($moduleNameArr) > 1) {
-            [$moduleGroup, $name] = $moduleNameArr;
+            [$moduleGroup, $pureName] = $moduleNameArr;
         } else {
             $moduleGroup = $data['group'];
+            $pureName = $data['name'];
         }
+
+        $moduleSlug = Str::slug($pureName);
+        $studlyModuleName = Str::studly($pureName);
+        
         $commandName = $moduleGroup ? $moduleGroup . '/' . $moduleSlug : $moduleSlug;
         
-        $moduleModel = $this->createModule($data['name'], $studlyModuleName, $commandName);
+        $tables = $data['tables'] ?? [];
+        
+
+        $moduleModel = $this->createModule($pureName, $studlyModuleName, $commandName);
 
         if (!empty($tables)) {
             foreach ($tables as $table) {
@@ -57,7 +64,12 @@ class ModuleMakerService
                         'name' => Str::studly(Str::singular($tableName)),
                         'model_name' => Str::studly(Str::singular($tableName)),
                     ];
-                    $this->createFilamentResource($commandName, $data['name'], $resourceData);
+                    
+                    // Find layout for this table
+                    $tableLayout = collect($data['resource_layouts'] ?? [])->firstWhere('table_name', $tableName);
+                    $layoutSchema = $tableLayout['schema'] ?? [];
+
+                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsForMigration, $layoutSchema);
                 }
 
                 foreach ($columnsForMigration as $columnName => $columnType) {
@@ -114,19 +126,19 @@ class ModuleMakerService
         ]);
     }
 
-    public function createFilamentResource($commandName, $moduleName, $resourceData)
+    public function createFilamentResource($commandName, $moduleName, $resourceData, $columns, $layoutData)
     {
         $resourceName = Str::studly($resourceData['name']);
         $modelName = Str::studly($resourceData['model_name'] ?? Str::singular($resourceData['name']));
 
         // Create the main Resource file
-        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName);
+        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData);
 
         // Create Resource Pages
         $this->createResourcePages($commandName, $moduleName, $resourceName, $modelName);
     }
 
-    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName)
+    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData)
     {
         $resourceFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource.php");
         $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/StubTableNameResource.php'));
@@ -152,6 +164,9 @@ class ModuleMakerService
             ],
             $stub
         );
+
+        $formSchema = $this->generateFormSchema($columns, $layoutData);
+        $resourceFileContent = str_replace('// Add your form fields here', $formSchema, $resourceFileContent);
 
         file_put_contents($resourceFile, $resourceFileContent);
     }
@@ -363,5 +378,128 @@ class ModuleMakerService
             ->filter(fn($value, $key) => !$search || Str::contains($key, $search))
             ->collapse()
             ->toArray();
+    }
+
+
+    private function generateFormSchema(array $columns, array $builderBlocks): string
+    {
+        // If no builder blocks, fallback to simple list of all columns
+        if (empty($builderBlocks)) {
+            $fields = [];
+            foreach ($columns as $name => $type) {
+                $fields[] = $this->getFieldString($name, $type);
+            }
+            return implode("\n                ", $fields);
+        }
+
+        $components = [];
+
+        foreach ($builderBlocks as $block) {
+            $type = $block['type'];
+            $data = $block['data'] ?? [];
+
+            switch ($type) {
+                case 'field':
+                    $colName = $data['column'] ?? null;
+                    $isTranslatable = $data['is_translatable'] ?? false;
+                    
+                    if ($isTranslatable && $colName) {
+                        $components[] = "...getNameInputsFilament('{$colName}')";
+                    } elseif ($colName && isset($columns[$colName])) {
+                        $components[] = $this->getFieldString($colName, $columns[$colName]);
+                    } elseif ($colName) {
+                         // Fallback if type not found (shouldn't happen if validated)
+                        $components[] = $this->getFieldString($colName, 'string');
+                    }
+                    break;
+
+                case 'section':
+                    $label = $data['label'] ?? 'Section';
+                    $innerBlocks = $data['schema'] ?? []; // Builder inside section
+                    $innerContent = $this->generateFormSchema($columns, $innerBlocks);
+                    $components[] = "\Filament\Schemas\Components\Section::make('{$label}')\n                    ->schema([\n                        " . str_replace("\n", "\n    ", $innerContent) . "\n                    ])";
+                    break;
+
+                case 'tabs':
+                    $tabs = $data['tabs'] ?? [];
+                    $tabComponents = [];
+                    foreach ($tabs as $tab) {
+                        $tabLabel = $tab['label'] ?? 'Tab';
+                        $tabBlocks = $tab['schema'] ?? [];
+                        $tabContent = $this->generateFormSchema($columns, $tabBlocks);
+                        $tabComponents[] = "\Filament\Schemas\Components\Tabs\Tab::make('{$tabLabel}')\n                            ->schema([\n                                " . str_replace("\n", "\n        ", $tabContent) . "\n                            ])";
+                    }
+                    $tabsContentString = implode(",\n                        ", $tabComponents);
+                    $components[] = "\Filament\Schemas\Components\Tabs::make('Tabs')\n                    ->tabs([\n                        {$tabsContentString}\n                    ])";
+                    break;
+                
+                case 'fieldset':
+                    $label = $data['label'] ?? 'Fieldset';
+                    $innerBlocks = $data['schema'] ?? [];
+                    $innerContent = $this->generateFormSchema($columns, $innerBlocks);
+                    $components[] = "\Filament\Schemas\Components\Fieldset::make('{$label}')\n                    ->schema([\n                        " . str_replace("\n", "\n    ", $innerContent) . "\n                    ])";
+                    break;
+                
+                case 'grid':
+                    $gridCols = $data['columns'] ?? 2;
+                    $gridItems = $data['items'] ?? []; 
+                    // items is expected to be { 0: [...], 1: [...] } for columns
+                    
+                    $colComponents = [];
+                    for ($i = 0; $i < $gridCols; $i++) {
+                        $colBlocks = $gridItems[$i] ?? [];
+                        if (empty($colBlocks)) {
+                             // Empty column placeholder to maintain grid structure? 
+                             // Or just empty group.
+                             $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
+                             continue;
+                        }
+                        $colContent = $this->generateFormSchema($columns, $colBlocks);
+                        $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
+                    }
+                    
+                    $gridContent = implode(",\n                        ", $colComponents);
+                    
+                    $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
+                    break;
+            }
+        }
+
+        return implode(",\n                ", $components);
+    }
+
+    private function getFieldString($name, $type): string
+    {
+        $label = Str::headline($name);
+        
+        // Basic type mapping
+        switch ($type) {
+            case 'boolean':
+                return "\Filament\Forms\Components\Toggle::make('{$name}')->label('{$label}')";
+            case 'text':
+            case 'mediumText':
+            case 'longText':
+            case 'json':
+            case 'jsonb':
+                return "\Filament\Forms\Components\Textarea::make('{$name}')->label('{$label}')";
+            case 'date':
+                return "\Filament\Forms\Components\DatePicker::make('{$name}')->label('{$label}')";
+            case 'datetime':
+            case 'timestamp':
+                return "\Filament\Forms\Components\DateTimePicker::make('{$name}')->label('{$label}')";
+            case 'integer':
+            case 'tinyInteger':
+            case 'smallInteger':
+            case 'mediumInteger':
+            case 'bigInteger':
+            case 'unsignedInteger':
+            case 'unsignedBigInteger':
+            case 'decimal':
+            case 'float':
+            case 'double':
+                return "\Filament\Forms\Components\TextInput::make('{$name}')->label('{$label}')->numeric()";
+            default:
+                return "\Filament\Forms\Components\TextInput::make('{$name}')->label('{$label}')";
+        }
     }
 }

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Filament Form Builder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- GLOBAL & VARIABLES --- */
+        :root {
+            --bg-body: #f8fafc;
+            --border-color: #e2e8f0;
+            --primary: #d97706; /* Filament Amber */
+            --radius: 0.5rem;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            background-color: var(--bg-body);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            gap: 15px;
+            z-index: 20;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .draggable-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: grab;
+            font-size: 13px;
+            font-weight: 500;
+            color: #334155;
+            transition: all 0.2s;
+        }
+        .draggable-item:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #fffbeb;
+        }
+
+        /* --- CANVAS --- */
+        .canvas {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        #root-drop-zone {
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 600px;
+            padding-bottom: 150px;
+        }
+
+        /* --- COMPONENTS STYLE --- */
+        .comp-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            width: 26px;
+            height: 26px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .comp-wrapper:hover > .delete-btn { display: flex; }
+
+        /* FIELDSET */
+        .f-fieldset {
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            padding: 20px;
+            background: #fff;
+        }
+        .f-fieldset legend {
+            font-weight: 600;
+            color: #1e293b;
+            padding: 0 8px;
+            font-size: 14px;
+        }
+
+        /* SECTION */
+        .f-section {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* INPUTS */
+        .f-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #334155; }
+        .f-input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; box-sizing: border-box;}
+        .f-input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
+
+        /* --- ADVANCED GRID SYSTEM --- */
+        .f-grid-container {
+            border: 1px dashed #94a3b8;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .grid-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: #f1f5f9;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .grid-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-right: 15px;
+            border-right: 1px solid #cbd5e1;
+        }
+        .grid-group:last-child { border-right: none; }
+
+        .grid-group-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #64748b;
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+        }
+
+        .grid-btn {
+            border: 1px solid #cbd5e1;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: #475569;
+        }
+        .grid-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .grid-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .f-grid-row {
+            display: grid;
+            gap: 20px;
+            min-height: 60px;
+        }
+
+        .f-grid-col {
+            border: 1px dotted #94a3b8;
+            border-radius: 5px;
+            padding: 10px;
+            background: rgba(255,255,255,0.6);
+            min-height: 50px;
+        }
+
+        /* Drag Over Visuals */
+        .drop-zone.drag-over { background-color: #f0fdf4; border: 2px dashed #22c55e; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3 style="margin:0 0 20px 0; color:#0f172a;">Form Builder</h3>
+
+    <div>
+        <div class="section-title">Layouts</div>
+        <div class="draggable-item" draggable="true" data-type="grid">
+            <i class="fas fa-table-columns"></i> Advanced Grid
+        </div>
+        <div class="draggable-item" draggable="true" data-type="section">
+            <i class="far fa-square"></i> Section (Card)
+        </div>
+        <div class="draggable-item" draggable="true" data-type="fieldset">
+            <i class="fas fa-compress"></i> Fieldset
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title">Fields</div>
+        <div class="draggable-item" draggable="true" data-type="text">
+            <i class="fas fa-font"></i> Text Input
+        </div>
+        <div class="draggable-item" draggable="true" data-type="number">
+            <i class="fas fa-hashtag"></i> Number
+        </div>
+        <div class="draggable-item" draggable="true" data-type="select">
+            <i class="fas fa-list"></i> Select
+        </div>
+        <div class="draggable-item" draggable="true" data-type="editor">
+            <i class="fas fa-paragraph"></i> Rich Editor
+        </div>
+    </div>
+</div>
+
+<div class="canvas">
+    <div id="root-drop-zone" class="drop-zone">
+        <div id="placeholder" style="text-align: center; color: #94a3b8; margin-top: 150px;">
+            <i class="fas fa-layer-group" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+            <p>Formani yig'ish uchun elementlarni bu yerga tashlang</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === DRAG & DROP ENGINE ===
+    let draggedType = null;
+
+    document.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggedType = item.getAttribute('data-type');
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+    });
+
+    function initDropZone(el) {
+        el.classList.add('drop-zone');
+
+        el.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.add('drag-over');
+        });
+
+        el.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove('drag-over');
+        });
+
+        el.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove('drag-over');
+
+            // Hide placeholder
+            const ph = document.getElementById('placeholder');
+            if(ph) ph.style.display = 'none';
+
+            if (draggedType) {
+                const comp = createComponent(draggedType);
+                el.appendChild(comp);
+                draggedType = null;
+            }
+        });
+    }
+
+    // Initialize Root
+    initDropZone(document.getElementById('root-drop-zone'));
+
+    // === COMPONENT FACTORY ===
+    function createComponent(type) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'comp-wrapper';
+
+        // Delete Button
+        wrapper.innerHTML = `<button class="delete-btn" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+
+        // 1. ADVANCED GRID
+        if (type === 'grid') {
+            const container = document.createElement('div');
+            container.className = 'f-grid-container';
+
+            // --- TOOLBAR WITH ALL OPTIONS ---
+            const toolbar = document.createElement('div');
+            toolbar.className = 'grid-controls';
+            toolbar.innerHTML = `
+                    <div class="grid-group">
+                        <span class="grid-group-label">2 COL</span>
+                        <button class="grid-btn active" onclick="setGrid(this, '1fr 1fr', 2)">50/50</button>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 2fr', 2)">1/3</button>
+                        <button class="grid-btn" onclick="setGrid(this, '2fr 1fr', 2)">3/1</button>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 4fr', 2)">20/80</button>
+                        <button class="grid-btn" onclick="setGrid(this, '4fr 1fr', 2)">80/20</button>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 3fr', 2)">25/75</button>
+                        <button class="grid-btn" onclick="setGrid(this, '3fr 1fr', 2)">75/25</button>
+                    </div>
+                    <div class="grid-group">
+                        <span class="grid-group-label">3 COL</span>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 1fr 1fr', 3)">1:1:1</button>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 2fr 1fr', 3)">1:2:1</button>
+                        <button class="grid-btn" onclick="setGrid(this, '1fr 1fr 2fr', 3)">1:1:2</button>
+                    </div>
+                    <div class="grid-group">
+                        <span class="grid-group-label">MULTI</span>
+                        <button class="grid-btn" onclick="setGrid(this, 'repeat(4, 1fr)', 4)">4 Col</button>
+                        <button class="grid-btn" onclick="setGrid(this, 'repeat(5, 1fr)', 5)">5 Col</button>
+                        <button class="grid-btn" onclick="setGrid(this, 'repeat(6, 1fr)', 6)">6 Col</button>
+                    </div>
+                `;
+
+            // Columns
+            const row = document.createElement('div');
+            row.className = 'f-grid-row';
+            row.style.gridTemplateColumns = '1fr 1fr'; // Default
+
+            // Default 2 cols
+            createCol(row);
+            createCol(row);
+
+            container.appendChild(toolbar);
+            container.appendChild(row);
+            wrapper.appendChild(container);
+        }
+        // 2. FIELDSET
+        else if (type === 'fieldset') {
+            const el = document.createElement('fieldset');
+            el.className = 'f-fieldset drop-zone';
+            el.innerHTML = `<legend contenteditable="true">Yangi Guruh</legend>`;
+            initDropZone(el);
+            wrapper.appendChild(el);
+        }
+        // 3. SECTION
+        else if (type === 'section') {
+            const el = document.createElement('div');
+            el.className = 'f-section';
+            el.innerHTML = `<div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;" contenteditable="true">Section Title</div>`;
+
+            const body = document.createElement('div');
+            body.style.minHeight = "40px";
+            initDropZone(body);
+            el.appendChild(body);
+            wrapper.appendChild(el);
+        }
+        // 4. FIELDS
+        else {
+            const box = document.createElement('div');
+            box.style.background = 'white';
+            box.style.padding = '10px';
+            box.style.borderRadius = '6px';
+            box.style.border = '1px solid #e2e8f0';
+
+            let inputHtml = `<input type="text" class="f-input">`;
+            let label = "Text Field";
+
+            if(type === 'select') {
+                label = "Select Option";
+                inputHtml = `<select class="f-input"><option>Option 1</option></select>`;
+            } else if (type === 'editor') {
+                label = "Description";
+                inputHtml = `<div style="height:80px; border:1px solid #ccc; border-radius:4px; padding:5px; color:#999;">Rich Text...</div>`;
+            } else if (type === 'number') {
+                label = "Amount";
+                inputHtml = `<input type="number" class="f-input" placeholder="0">`;
+            }
+
+            box.innerHTML = `<label class="f-label" contenteditable="true">${label}</label>${inputHtml}`;
+            wrapper.appendChild(box);
+        }
+
+        return wrapper;
+    }
+
+    // Helper to create grid column
+    function createCol(row) {
+        const col = document.createElement('div');
+        col.className = 'f-grid-col drop-zone';
+        initDropZone(col);
+        row.appendChild(col);
+    }
+
+    // === GRID SYSTEM LOGIC ===
+    window.setGrid = function(btn, template, count) {
+        // 1. UI: Active Button
+        const toolbar = btn.closest('.grid-controls');
+        toolbar.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 2. Logic: Change Columns
+        const container = toolbar.nextElementSibling; // .f-grid-row
+        container.style.gridTemplateColumns = template;
+
+        // 3. Manage Columns (Add/Remove)
+        const currentCols = container.children.length;
+
+        if (currentCols < count) {
+            // Add missing columns
+            for (let i = 0; i < (count - currentCols); i++) {
+                createCol(container);
+            }
+        } else if (currentCols > count) {
+            // Remove extra columns
+            // Note: In real production, you might want to move content instead of deleting
+            const cols = Array.from(container.children);
+            for (let i = count; i < cols.length; i++) {
+                cols[i].remove();
+            }
+        }
+    };
+
+</script>
+</body>
+</html>

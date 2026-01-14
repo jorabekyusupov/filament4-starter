@@ -98,6 +98,7 @@ class ModuleMakerResource extends Resource
                         ->description(__('Define tables and columns'))
                         ->icon('heroicon-o-table-cells')
                         ->schema([
+    
                             Repeater::make('tables')
                                 ->label(__('Tables'))
                                 ->schema([
@@ -108,7 +109,8 @@ class ModuleMakerResource extends Resource
                                                 ->placeholder(__('posts'))
                                                 ->required()
                                                 ->helperText(__('The name of the table, e.g. "posts"'))
-                                                ->columnSpan(2),
+                                                ->columnSpan(2)
+                                                ->live(onBlur: true),
                                             
                                             Toggle::make('has_resource')
                                                 ->label(__('Generate Resource'))
@@ -116,7 +118,8 @@ class ModuleMakerResource extends Resource
                                                 ->onColor('success')
                                                 ->offColor('gray')
                                                 ->helperText(__('Create a Filament Resource for this table'))
-                                                ->columnSpan(1),
+                                                ->columnSpan(1)
+                                                ->live(),
                                                 
                                             Fieldset::make(__('Options'))
                                                 ->schema([
@@ -142,7 +145,8 @@ class ModuleMakerResource extends Resource
                                                     TextInput::make('name')
                                                         ->label(__('Column Name'))
                                                         ->required()
-                                                        ->placeholder('title'),
+                                                        ->placeholder('title')
+                                                        ->live(onBlur: true),
                                                     Select::make('type')
                                                         ->label(__('Column Type'))
                                                         ->required()
@@ -152,13 +156,71 @@ class ModuleMakerResource extends Resource
                                         ])
                                         ->defaultItems(1)
                                         ->collapsible()
-                                        ->columnSpanFull(),
+                                        ->columnSpanFull()
+                                        ->live(),
                                 ])
                                 ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
                                 ->collapsed(fn ($state) => count($state) > 1)
                                 ->defaultItems(0)
                                 ->addActionLabel(__('Add Table'))
-                                ->reorderable(false),
+                                ->reorderable(false)
+                                ->live(), // Important for next step to see changes
+                        ]),
+
+                    \Filament\Schemas\Components\Wizard\Step::make(__('Resource Layouts'))
+                        ->description(__('Drag and drop to configure form layout'))
+                        ->icon('heroicon-o-squares-plus')
+                        ->schema([
+                            Repeater::make('resource_layouts')
+                                ->label(__('Layouts'))
+                                ->schema([
+                                    Select::make('table_name')
+                                        ->label(__('Table'))
+                                        ->options(function (Get $get) {
+                                            $tables = $get('../../tables') ?? [];
+                                            return collect($tables)
+                                                ->where('has_resource', true)
+                                                ->filter(fn($table) => !empty($table['name']))
+                                                ->pluck('name', 'name')
+                                                ->toArray();
+                                        })
+                                        ->required()
+                                        ->live(),
+
+                                    \Filament\Forms\Components\ViewField::make('schema')
+                                        ->label(__('visual_builder'))
+                                        ->hiddenLabel()
+                                        ->view('maker-module::filament.forms.components.visual-builder')
+                                        ->viewData(function (Get $get) {
+                                            $tableName = $get('table_name');
+                                            $columns = [];
+                                            
+                                            if ($tableName) {
+                                                // Path: resource_layouts -> item -> schema (current)
+                                                // ../ -> item
+                                                // ../../ -> resource_layouts
+                                                // Using ../../tables as sibling of resource_layouts
+                                                $tables = $get('../../tables') ?? [];
+                                                $tableData = collect($tables)->firstWhere('name', $tableName);
+                                                $columns = $tableData['columns'] ?? [];
+                                            }
+
+                                            return [
+                                                'columns' => array_values($columns), // Ensure strictly array
+                                            ];
+                                        })
+                                        ->key(function (Get $get) {
+                                            $tableName = $get('table_name');
+                                            $tables = $get('../../tables') ?? [];
+                                            $tableData = collect($tables)->firstWhere('name', $tableName);
+                                            $columns = $tableData['columns'] ?? [];
+                                            // Force re-render if columns change or table changes
+                                            return 'vb-' . $tableName . '-' . md5(json_encode($columns));
+                                        })
+                                        ->columnSpanFull(),
+                                ])
+                                ->addActionLabel(__('Add Layout Configuration'))
+                                ->columnSpanFull(),
                         ]),
                 ])
                 ->columnSpanFull()

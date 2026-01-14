@@ -12,15 +12,7 @@ class MakerModuleSeeder extends Seeder
      */
     public function run(): void
     {
-
-        Module::query()->truncate();
-        $data = module_path('core/maker-module/data/data.json');
-        $json = json_decode(file_get_contents($data), true, 512, JSON_THROW_ON_ERROR);
-        foreach ($json as $key => $item) {
-            $json[$key]['created_at'] = now();
-            $json[$key]['updated_at'] = now();
-        }
-        Module::query()->insert($json);
+        \Illuminate\Support\Facades\Artisan::call('sync:module');
     }
 
 

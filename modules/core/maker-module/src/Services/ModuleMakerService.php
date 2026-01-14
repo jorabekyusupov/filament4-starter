@@ -29,7 +29,7 @@ class ModuleMakerService
         $tables = $data['tables'] ?? [];
         
 
-        $moduleModel = $this->createModule($pureName, $studlyModuleName, $commandName);
+        $moduleModel = $this->createModule($pureName, $studlyModuleName, $commandName, $tables);
 
         if (!empty($tables)) {
             foreach ($tables as $table) {
@@ -60,9 +60,9 @@ class ModuleMakerService
                     $columnsAssociative[$col['name']] = $col;
                 }
                 
-                $columnsForMigration = array_combine(array_column($columns, 'name'), array_column($columns, 'type'));
+                $columnsForMigration = $columnsAssociative; // Pass full data to support modifiers
 
-                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); // Migration can still use simple map for now or updated later
+                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
                 $this->createModelFile($commandName, $data['name'], $tableName, $columnsAssociative, $softDeletes);
 
                 // Add Filament Resource creation if has_resource is true
@@ -79,12 +79,22 @@ class ModuleMakerService
                     $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsAssociative, $layoutSchema);
                 }
 
-                foreach ($columnsForMigration as $columnName => $columnType) {
+                foreach ($columns as $col) {
                     $tableModel
                         ->columns()
                         ->create([
-                            'name' => $columnName,
-                            'type' => $columnType,
+                            'name' => $col['name'],
+                            'type' => $col['type'],
+                            // Map explicit attributes
+                            'nullable' => $col['nullable'] ?? false,
+                            'unique' => $col['unique'] ?? false,
+                            'index' => $col['index'] ?? false,
+                            // Map foreign key details if available (assuming related_model logic implies foreign)
+                            'foreign' => isset($col['related_model']),
+                            'foreign_table' => $col['related_model'] ?? null, // storing model here for reference, or table name if we had it
+                            'foreign_column' => $col['related_column'] ?? null,
+                            
+                            'options' => json_encode($col),
                             'module_id' => $moduleModel->id,
                             'status' => true,
                             'user_id' => auth()->id(),
@@ -97,7 +107,7 @@ class ModuleMakerService
         return $moduleModel;
     }
 
-    public function createModule($name, $studlyModuleName, $commandName): Module
+    public function createModule($name, $studlyModuleName, $commandName, $tables = []): Module
     {
         Artisan::call(MakeModule::class, [
             'name' => $commandName,
@@ -115,14 +125,54 @@ class ModuleMakerService
         }
 
         $currentData = json_decode(file_get_contents($dataJson), true, 512, JSON_THROW_ON_ERROR);
-        $currentData[] = [
+        
+        // Prepare tables data for persistence
+        $tablesData = [];
+        foreach ($tables as $table) {
+            $columnsData = [];
+            foreach ($table['columns'] as $column) {
+                $columnsData[] = [
+                    'name' => $column['name'],
+                    'type' => $column['type'],
+                    'options' => $column, // Store full metadata including related_model etc.
+                ];
+            }
+            
+            $tablesData[] = [
+                'name' => $table['name'],
+                'soft_deletes' => $table['soft_deletes'] ?? false,
+                'logged' => $table['logged'] ?? false,
+                'status' => $table['status'] ?? true,
+                'columns' => $columnsData,
+            ];
+        }
+
+        $newItem = [
             'name' => $name,
             'source' => 'admin',
             'namespace' => 'Modules\\' . $studlyModuleName,
             'path' => 'modules/' . $commandName,
             'status' => true,
             'stable' => false,
+            'tables' => $tablesData,
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
+
+        // Check if exists and update or append
+        $exists = false;
+        foreach ($currentData as $key => $item) {
+            if ($item['path'] === $newItem['path']) {
+                $currentData[$key] = array_merge($item, $newItem);
+                $exists = true;
+                break;
+            }
+        }
+        
+        if (!$exists) {
+            $currentData[] = $newItem;
+        }
+
         file_put_contents($dataJson, json_encode($currentData, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
         
         return Module::create([
@@ -247,18 +297,43 @@ class ModuleMakerService
         }
 
         $columnsContent = collect($columns)
-            ->map(function ($type, $column) {
+            ->map(function ($columnData, $columnName) {
+                // Handle both legacy (name => type) and new (name => [type, ...]) formats for backward compatibility
+                // But since we updated callers to pass full objects, we should expect array.
+                // However, createMigrationFile signature was not strictly typed for $columns content initially. 
+                // Let's safe cast.
+                
+                $type = is_array($columnData) ? $columnData['type'] : $columnData;
+                $props = is_array($columnData) ? $columnData : [];
+                $name = $props['name'] ?? $columnName; // Use name from prop if available (createDB loop uses name index)
+                
+                // If the key is numeric (because we passed list of columns), name comes from prop
+                // If key is string (legacy associative), name comes from key.
+                if (is_numeric($columnName) && isset($props['name'])) {
+                    $columnName = $props['name'];
+                }
+
+                $def = "";
                 if ($type === 'foreignId') {
                     // Extract model from column name (e.g. user_id -> users) or use metadata if available
                     // For now, assuming simple foreignId('user_id')->constrained() or constrained('users')
-                    // Since we don't pass full metadata here yet, we need to update how createMigrationFile receives data
-                    // But wait, createMigrationFile receives $columns which is name => type.
-                    // We need to pass full column data to support this properly.
-                    // For now, let's just do generic constrained if possible, or leave as bigInteger if we can't infer.
-                    // Actually, let's just return foreignId for now, we will refine this when we pass full data.
-                    return "            \$table->foreignId('{$column}')->constrained();"; 
+                    $def = "\$table->foreignId('{$columnName}')->constrained()";
+                } else {
+                    $def = "\$table->{$type}('{$columnName}')";
                 }
-                 return "            \$table->{$type}('{$column}');";
+
+                // Add Modifiers
+                if (!empty($props['nullable'])) {
+                    $def .= "->nullable()";
+                }
+                if (!empty($props['unique'])) {
+                    $def .= "->unique()";
+                }
+                if (!empty($props['index'])) {
+                    $def .= "->index()";
+                }
+
+                return "            {$def};";
             })
             ->implode("\n");
         $migrationFileContent = str_replace(array('StubModuleName', '//columns'), array(Str::plural($tableName), $columnsContent), $stub);

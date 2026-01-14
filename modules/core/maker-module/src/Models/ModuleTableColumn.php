@@ -25,6 +25,14 @@ class ModuleTableColumn extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'options' => 'array',
+        'nullable' => 'boolean',
+        'unique' => 'boolean',
+        'index' => 'boolean',
+        'foreign' => 'boolean',
+    ];
+
     public function table()
     {
         return $this->belongsTo(ModuleTable::class, 'module_table_id');

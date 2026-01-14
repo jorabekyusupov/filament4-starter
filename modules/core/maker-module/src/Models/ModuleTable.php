@@ -17,6 +17,12 @@ class ModuleTable extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'soft_deletes' => 'boolean',
+        'timestamps' => 'boolean',
+        'logged' => 'boolean',
+    ];
+
     public function columns()
     {
         return $this->hasMany(ModuleTableColumn::class, 'module_table_id');

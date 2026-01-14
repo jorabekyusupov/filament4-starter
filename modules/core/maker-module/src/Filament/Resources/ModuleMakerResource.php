@@ -2,9 +2,10 @@
 
 namespace Modules\MakerModule\Filament\Resources;
 
-
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -168,6 +169,19 @@ class ModuleMakerResource extends Resource
                                                         ->helperText(__('Column to display in select (default: name)'))
                                                         ->required()
                                                         ->visible(fn (Get $get) => $get('type') === 'foreignId'),
+                                                    
+                                                    \Filament\Schemas\Components\Grid::make(3)
+                                                        ->schema([
+                                                            \Filament\Forms\Components\Toggle::make('nullable')
+                                                                ->label('Nullable')
+                                                                ->inline(false),
+                                                            \Filament\Forms\Components\Toggle::make('unique')
+                                                                ->label('Unique')
+                                                                ->inline(false),
+                                                            \Filament\Forms\Components\Toggle::make('index')
+                                                                ->label('Index')
+                                                                ->inline(false),
+                                                        ])->columnSpanFull(),
                                                 ]),
                                         ])
                                         ->defaultItems(1)
@@ -204,30 +218,36 @@ class ModuleMakerResource extends Resource
                                         ->live(),
 
                                     \Filament\Forms\Components\ViewField::make('schema')
-                                        ->label(__('visual_builder'))
-                                        ->hiddenLabel()
+                                        ->label(function (Get $get) {
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
+                                            $tableName = $get('table_name');
+                                            $cols = 0;
+                                            if ($tableName) {
+                                                $data = collect($tables)->firstWhere('name', $tableName);
+                                                $cols = count($data['columns'] ?? []);
+                                            }
+                                            return __('visual_builder') . " (Debug: {$cols} columns found)";
+                                        })
+                                        ->hiddenLabel(false) // Show label for debug
                                         ->view('maker-module::filament.forms.components.visual-builder')
                                         ->viewData(function (Get $get) {
                                             $tableName = $get('table_name');
-                                            $columns = [];
+                                            // Try multiple paths to ensure we find the tables repeater state
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
                                             
+                                            $columns = [];
                                             if ($tableName) {
-                                                // Path: resource_layouts -> item -> schema (current)
-                                                // ../ -> item
-                                                // ../../ -> resource_layouts
-                                                // Using ../../tables as sibling of resource_layouts
-                                                $tables = $get('../../tables') ?? [];
                                                 $tableData = collect($tables)->firstWhere('name', $tableName);
                                                 $columns = $tableData['columns'] ?? [];
                                             }
 
                                             return [
-                                                'columns' => array_values($columns), // Ensure strictly array
+                                                'columns' => array_values($columns),
                                             ];
                                         })
                                         ->key(function (Get $get) {
                                             $tableName = $get('table_name');
-                                            $tables = $get('../../tables');
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
                                             
                                             // Ensure tables is array
                                             if (!is_array($tables)) {
@@ -237,9 +257,9 @@ class ModuleMakerResource extends Resource
                                             $tableData = collect($tables)->firstWhere('name', $tableName);
                                             $columns = $tableData['columns'] ?? [];
                                             
-                                            // Force re-render if columns change or table changes
-                                            // We use a checksum of columns to detect changes
-                                            return 'vb-' . $tableName . '-' . md5(json_encode($columns));
+                                            // Use robust checksum: table name + count + names
+                                            $colSignature = count($columns) . '-' . implode(',', array_column($columns, 'name'));
+                                            return 'vb-' . $tableName . '-' . md5($colSignature);
                                         })
                                         ->columnSpanFull(),
                                 ])

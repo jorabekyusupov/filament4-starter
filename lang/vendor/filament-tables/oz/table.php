@@ -112,7 +112,9 @@ return [
     'filters' => [
 
         'actions' => [
-
+            'apply' => [
+                'label' => 'Filtrni qo\'llash',
+            ],
             'remove' => [
                 'label' => 'Filtrni o\'chirish',
             ],

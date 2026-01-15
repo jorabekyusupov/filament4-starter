@@ -113,6 +113,7 @@ class UserResource extends Resource
                     ->schema([
                         Select::make('roles')
                             ->relationship('roles', 'name')
+                            ->label(__('role'))
                             ->preload()
                             ->searchable(),
                         Select::make('organization_id')

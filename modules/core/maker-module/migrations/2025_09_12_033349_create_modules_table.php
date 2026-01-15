@@ -11,6 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('namespace');
+            $table->text('description')->nullable();
+            $table->string('alias')->nullable();
             $table->string('path');
             $table->string('source')->index()->default('admin');
             $table->boolean('stable')->index()->default(true);

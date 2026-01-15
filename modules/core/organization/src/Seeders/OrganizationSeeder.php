@@ -13,14 +13,16 @@ class OrganizationSeeder extends Seeder
         Organization::query()
             ->create([
                 'name' => [
-                    'ru' => 'DEFAULT',
-                    'oz' => 'DEFAULT',
-                    'uz' => 'DEFAULT',
-                    'en' => 'DEFAULT',
+                    "en" => "System Management Organization",
+                    "oz" => "Tizim boshqaruv tashkiloti",
+                    "ru" => "Организация управления системой",
+                    "uz" => "Тизим бошқарув ташкилоти"
                 ],
                 'slug' => 'default',
                 'structure_id' => null,
                 'hidden' => true,
+                'is_dont_delete' => true,
+                'status' => true,
             ]);
 
 

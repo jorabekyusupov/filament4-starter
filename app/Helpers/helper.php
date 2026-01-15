@@ -203,12 +203,10 @@ function getNameInputsFilament($name = 'name', $required = true, $description = 
             ->label($language->name)
             ->schema(array_filter([
                 \Filament\Forms\Components\TextInput::make($name . '.' . $language->code)
-                    ->label($name . '_' . $language->code)
-                    ->translateLabel()
+                    ->label(__($name . '_' . $language->code))
                     ->required($required),
                 $description ? \Filament\Forms\Components\Textarea::make($descriptionName . '.' . $language->code)
-                    ->label($descriptionName . '_' . $language->code)
-                    ->translateLabel()
+                    ->label(__($descriptionName . '_' . $language->code))
                     ->required($descriptionRequired) : null,
             ]));
     }

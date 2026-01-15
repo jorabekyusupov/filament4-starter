@@ -37,6 +37,7 @@ class SyncModuleCommand extends Command
                 'alias' => Str::studly($moduleData['name']), // Or namespace?
                 'path' => $moduleData['path'],
                 'status' => $moduleData['status'] ?? true,
+                'namespace' => $moduleData['namespace'] ?? 'Modules\\' . Str::studly($moduleData['name']),
                 'user_id' => 1, // Default user
                 'created_at' => $moduleData['created_at'] ?? \Illuminate\Support\Facades\Date::now(),
                 'updated_at' => $moduleData['updated_at'] ?? \Illuminate\Support\Facades\Date::now(),

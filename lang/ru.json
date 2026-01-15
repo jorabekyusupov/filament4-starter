@@ -1,4 +1,11 @@
 {
   "source": "Источник",
-  ":count translations": ":count переводов"
+  ":count translations": ":count переводов",
+  "all": "Все",
+  "main": "Главная",
+  "name_oz": "Название (латиница)",
+  "name_uz": "Название (узбекский)",
+  "name_ru": "Название (русский)",
+  "name_en": "Название (английский)",
+  "is_dont_delete": "Не удалять"
 }

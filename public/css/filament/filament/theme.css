@@ -152,44 +152,7 @@ body:where(.dark , .dark *) {
     border-radius: calc(var(--border-radius) + 8px) !important;
 }
 
-.btn {
-    --bs-btn-padding-x: 1.25rem;
-    --bs-btn-padding-y: 0.4812rem;
-    --bs-btn-font-family: inherit;
-    --bs-btn-font-size: 0.9375rem;
-    --bs-btn-font-weight: 500;
-    --bs-btn-line-height: 1.375;
-    --bs-btn-color: var(--bs-body-color);
-    --bs-btn-bg: transparent;
-    --bs-btn-border-width: var(--bs-border-width);
-    --bs-btn-border-color: transparent;
-    --bs-btn-border-radius: var(--bs-border-radius);
-    --bs-btn-hover-border-color: transparent;
-    --bs-btn-box-shadow: none;
-    --bs-btn-disabled-opacity: 0.45;
-    --bs-btn-focus-shadow-rgb: 136, 126, 242;
-    display: inline-block;
-    padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
-    font-family: var(--bs-btn-font-family);
-    font-size: var(--bs-btn-font-size);
-    font-weight: var(--bs-btn-font-weight);
-    line-height: var(--bs-btn-line-height);
-    color: var(--bs-btn-color);
-    text-align: center;
-    vertical-align: middle;
-    cursor: pointer;
-    user-select: none;
-    border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
-    border-radius: var(--bs-btn-border-radius);
-    background-color: var(--bs-btn-bg);
-    transition: all 0.2s ease-in-out;
-}
 
-.btn:hover {
-    color: var(--bs-btn-hover-color);
-    background-color: var(--bs-btn-hover-bg);
-    border-color: var(--bs-btn-hover-border-color);
-}
 
 .fi-btn-primary {
     --bs-btn-color: #fff;
@@ -601,6 +564,8 @@ border-radius: 8px;
     box-shadow: none !important;
     transition: all 0.2s ease-in-out !important;
 }
+
+
 
 .fi-btn:disabled,
 .fi-btn.fi-disabled,

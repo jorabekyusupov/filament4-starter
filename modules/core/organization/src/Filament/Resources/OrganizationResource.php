@@ -13,6 +13,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -56,6 +57,7 @@ class OrganizationResource extends Resource
     {
         return $schema
             ->schema([
+                ...getNameInputsFilament(),
 
 
             ]);
@@ -79,23 +81,33 @@ class OrganizationResource extends Resource
                     ->label(__('users_count'))
                     ->counts('users')
                     ->sortable(),
+                ToggleColumn::make('status')
+                    ->label(__('status'))
+                    ->hidden(function () {
+                        return !auth()->user()->hasSuperAdmin();
+                    })
+                    ->sortable(),
+                ToggleColumn::make('is_dont_delete')
+                    ->label(__('is_dont_delete'))
+                    ->hidden(function () {
+                        return !auth()->user()->hasSuperAdmin();
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
             ], FiltersLayout::AboveContent)
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->disabled(function (Model $record) {
+                        return $record->is_dont_delete && !auth()->user()->hasSuperAdmin();
+                    }),
+                DeleteAction::make()
+                    ->disabled(function (Model $record) {
+                        return $record->is_dont_delete && !auth()->user()->hasSuperAdmin();
+                    }),
                 RestoreAction::make(),
-                ForceDeleteAction::make(),
 
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
             ]);
     }
 
@@ -109,7 +121,7 @@ class OrganizationResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with([ 'users'])
+            ->with(['users'])
             ->withoutHidden();
     }
 

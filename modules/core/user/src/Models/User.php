@@ -74,14 +74,11 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults();
-    }
+
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasRole(Role::all()) && $this->status;
+        return $this->hasRole(Role::all()) && $this->status && $this->organization()->exists() && $this->organization->status;
     }
 
     public function organization()

@@ -12,13 +12,18 @@ return new class extends Migration {
             $table->jsonb('name')
                 ->index()
                 ->nullable();
-            $table->string('slug')->nullable();
+            $table->string('slug')
+                ->nullable();
             $table->foreignId('structure_id')
                 ->nullable()
                 ->index();
             $table->boolean('hidden')
                 ->default(false)
                 ->index();
+            $table->boolean('is_dont_delete')
+                ->default(false);
+            $table->boolean('status')
+                ->default(true);
             $table->softDeletes();
             $table->timestamps();
         });

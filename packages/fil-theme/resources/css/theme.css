@@ -163,7 +163,6 @@ body:where(.dark , .dark *) {
     --bs-btn-font-size: 0.9375rem;
     --bs-btn-font-weight: 500;
     --bs-btn-line-height: 1.375;
-    --bs-btn-color: var(--bs-body-color);
     --bs-btn-bg: transparent;
     --bs-btn-border-width: var(--bs-border-width);
     --bs-btn-border-color: transparent;
@@ -172,8 +171,10 @@ body:where(.dark , .dark *) {
     --bs-btn-box-shadow: none;
     --bs-btn-disabled-opacity: 0.45;
     --bs-btn-focus-shadow-rgb: 136, 126, 242;
+    --bs-btn-hover-bg: #7367f0;
+    --bs-btn-hover-color: #fff;
     padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
-    font-family: var(--bs-btn-font-family);
+    font-family: var(--bs-btn-font-family), serif;
     font-size: var(--bs-btn-font-size);
     font-weight: var(--bs-btn-font-weight);
     line-height: var(--bs-btn-line-height);
@@ -189,6 +190,7 @@ body:where(.dark , .dark *) {
     display: flex;
 
 }
+
 
 .fi-btn:hover {
     color: var(--bs-btn-hover-color);
@@ -702,4 +704,8 @@ input.fi-input:focus {
 
 
     }
+}
+
+.fi-sc-wizard:where(.dark, .dark *) {
+    background-color: #2f3349 !important;
 }

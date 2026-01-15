@@ -21,6 +21,8 @@ class Module extends Model
         'user_id',
         'status',
         'stable',
+        'description',
+        'alias'
     ];
 
     // Add any relationships or methods as needed

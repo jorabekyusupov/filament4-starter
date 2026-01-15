@@ -36,93 +36,98 @@ class UserSeeder extends Seeder
         ]);
 
 
-        $role = \Spatie\Permission\Models\Role::query()
-            ->firstOrCreate([
-                'name' => 'super_admin',
-                'guard_name' => 'web'
-            ]);
-        \Spatie\Permission\Models\Permission::query()->truncate();
-        \Spatie\Permission\Models\Permission::query()
-            ->insert([
-                [
-                    'name' => 'ViewAny:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'View:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'Create:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'Update:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'Delete:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'name' => 'Restore:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ],
-                [
-                    'name' => 'RestoreAny:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ],
-                [
-                    'name' => 'ForceDelete:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ],
-                [
-                    'name' => 'ForceDeleteAny:Role',
-                    'guard_name' => 'web',
-                    'group' => 'role',
-                    'module' => 'system',
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]
 
-            ]);
-
-
-        $user->assignRole($role->name);
-        $permissions = \Spatie\Permission\Models\Permission::query()->pluck('name')->toArray();
-        $role->syncPermissions($permissions);
+       $role = \Spatie\Permission\Models\Role::query()
+           ->firstOrCreate([
+               'name' => 'super_admin',
+               'guard_name' => 'web'
+           ]);
+           
+           $permissions = \Spatie\Permission\Models\Permission::query()->pluck('name')->toArray();
+           $role->syncPermissions($permissions);
+           $user->assignRole($role->name);
+//        \Spatie\Permission\Models\Permission::query()->truncate();
+//        \Spatie\Permission\Models\Permission::query()
+//            ->insert([
+//                [
+//                    'name' => 'ViewAny:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now(),
+//                ],
+//                [
+//                    'name' => 'View:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now(),
+//                ],
+//                [
+//                    'name' => 'Create:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now(),
+//                ],
+//                [
+//                    'name' => 'Update:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now(),
+//                ],
+//                [
+//                    'name' => 'Delete:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now(),
+//                ],
+//                [
+//                    'name' => 'Restore:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now()
+//                ],
+//                [
+//                    'name' => 'RestoreAny:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now()
+//                ],
+//                [
+//                    'name' => 'ForceDelete:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now()
+//                ],
+//                [
+//                    'name' => 'ForceDeleteAny:Role',
+//                    'guard_name' => 'web',
+//                    'group' => 'role',
+//                    'module' => 'system',
+//                    'created_at' => now(),
+//                    'updated_at' => now()
+//                ]
+//
+//            ]);
+//
+//
+//        $user->assignRole($role->name);
+//        $permissions = \Spatie\Permission\Models\Permission::query()->pluck('name')->toArray();
+//        $role->syncPermissions($permissions);
 //        $data = json_decode(file_get_contents(module_path("core/user/data/users.json")), true);
 //        $userInserter = [];
 //        $passwords = [];

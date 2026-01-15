@@ -29,5 +29,6 @@
   "unique": "Уникально",
   "This will make the module stable and ready for production use.": "Это сделает модуль стабильным и готовым к использованию в производстве.",
   "This will make the module unstable and not recommended for production use.": "Это сделает модуль нестабильным и не рекомендуется для использования в производстве.",
-  "has_resource": "имеет ресурс"
+  "has_resource": "имеет ресурс",
+  "maker-module": "Модуль создателя"
 }

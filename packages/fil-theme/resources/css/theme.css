@@ -2,7 +2,9 @@
 @source '../../../../../app/Filament/**/*';
 @source '../../../../../resources/views/filament/**/*';
 @source '../../../../modules/**/resources/views/**/*';
-
+@source '../../../../modules/**/resources/views/filament/resources/**/*';
+@source '../../../../modules/**/resources/views/filament/pages/**/*';
+@source '../../../../modules/**/resources/views/filament/widgets/**/*';
 :root {
     --border-radius: 12px;
     --dark-bg-color: #25293c;

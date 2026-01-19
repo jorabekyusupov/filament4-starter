@@ -6,6 +6,7 @@ use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Modules\Organization\Filament\Resources\OrganizationResource;
 use Modules\Structure\Models\Structure;
+use Illuminate\Database\Eloquent\Model;
 
 class ListOrganizations extends ListRecords
 {
@@ -16,7 +17,10 @@ class ListOrganizations extends ListRecords
         return [
             CreateAction::make()
 
-                ->mutateFormDataUsing(function ($data) {
+                ->using(function (array $data, string $model): Model {
+                    $permissions = $data['permissions'] ?? [];
+                    unset($data['permissions']);
+                    
                     $strName = Structure::find($data['structure_id'])->name;
                     $data['name'] = [
                         'uz' => data_get($strName, 'uz') . ' ' . 'Ташкилоти',
@@ -24,7 +28,11 @@ class ListOrganizations extends ListRecords
                         'en' => $data['structure_id'] . ' Organization',
                         'oz' => data_get($strName, 'oz') . ' ' . 'Tashkiloti',
                     ];
-                    return $data;
+                    
+                    $record = $model::create($data);
+                    $record->permissions()->sync($permissions);
+                    
+                    return $record;
                 }),
         ];
     }

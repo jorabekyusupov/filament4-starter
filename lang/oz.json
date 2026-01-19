@@ -1,1 +1,11 @@
-{}
+{
+    ":count translations": ":count tarjima",
+    "all": "Barchasi",
+    "is_dont_delete": "O'chirish mumkin emas",
+    "main": "Asosiy",
+    "name_en": "Nomi (Ingliz tilida)",
+    "name_oz": "Nomi (Lotin alifbosida)",
+    "name_ru": "Nomi (Rus tilida)",
+    "name_uz": "Nomi (Kril alifbosida)",
+    "source": "Manba"
+}

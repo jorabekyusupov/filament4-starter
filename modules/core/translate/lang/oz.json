@@ -1,11 +1,13 @@
 {
-  "translates": "Tarjimalar",
-  "key": "Kalit",
-  "download": "Yuklab olish",
-  "create-key": "Kalit yaratish",
-  "This key already exists.": "Bu kalit allaqachon mavjud.",
-  "locale_ru": "Ruscha",
-  "locale_en": "Inglizcha",
-  "locale_uz": "O'zbekcha",
-  "locale_oz": "Lotin O'zbekcha"
+    "This key already exists.": "Bu kalit allaqachon mavjud.",
+    "create-key": "Kalit yaratish",
+    "download": "Yuklab olish",
+    "key": "Kalit",
+    "locale_en": "Inglizcha",
+    "locale_oz": "Lotin O'zbekcha",
+    "locale_ru": "Ruscha",
+    "locale_uz": "O'zbekcha",
+    "statistics": "Statistika",
+    "translate": "Tarjima",
+    "translates": "Tarjimalar"
 }

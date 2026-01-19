@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruxsatlarni Boshqarish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Scrollbar dizayni */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+<div class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 border-b border-gray-200 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Ruxsatlarni Sozlash</h1>
+                <p class="mt-2 text-sm text-gray-500">Foydalanuvchi rollari uchun modullar va guruhlar bo'yicha ruxsatlarni boshqaring.</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex space-x-3">
+                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition">
+                    Bekor qilish
+                </button>
+                <button class="px-4 py-2 bg-indigo-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-indigo-700 shadow-md transition focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    O'zgarishlarni Saqlash
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="h-8 w-1 bg-indigo-500 rounded-full"></div>
+                <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Foydalanuvchilar Moduli</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-700">Xodimlar (Staff)</h3>
+                        <button class="text-xs text-indigo-600 hover:text-indigo-800 font-medium select-all-btn">Barini tanlash</button>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between group">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">Ko'rish (View)</span>
+                                <span class="text-xs text-gray-400">staff.view</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between group">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">Yaratish (Create)</span>
+                                <span class="text-xs text-gray-400">staff.create</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-700">Rollar (Roles)</h3>
+                        <button class="text-xs text-indigo-600 hover:text-indigo-800 font-medium select-all-btn">Barini tanlash</button>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between group">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">O'zgartirish (Edit)</span>
+                                <span class="text-xs text-gray-400">roles.edit</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between group">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">O'chirish (Delete)</span>
+                                <span class="text-xs text-gray-400">roles.delete</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="h-8 w-1 bg-emerald-500 rounded-full"></div>
+                <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Moliya Moduli</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-700">Hisobotlar</h3>
+                        <button class="text-xs text-emerald-600 hover:text-emerald-800 font-medium select-all-btn">Barini tanlash</button>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between group">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-emerald-600 transition">Eksport qilish</span>
+                                <span class="text-xs text-gray-400">report.export</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.select-all-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Kartochka ichidagi barcha checkboxlarni topish
+            const card = this.closest('.bg-white');
+            const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+
+            // Hammasi belgilanganligini tekshirish
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+
+            // Holatni o'zgartirish
+            checkboxes.forEach(c => c.checked = !allChecked);
+
+            // Matnni o'zgartirish (ixtiyoriy)
+            this.innerText = !allChecked ? "Barini bekor qilish" : "Barini tanlash";
+        });
+    });
+</script>
+</body>
+</html>

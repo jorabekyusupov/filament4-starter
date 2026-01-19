@@ -17,6 +17,8 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\ViewField;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -58,8 +60,16 @@ class OrganizationResource extends Resource
         return $schema
             ->schema([
                 ...getNameInputsFilament(),
-
-
+                Section::make(__('Permissions'))
+                    ->schema([
+                        ViewField::make('permissions')
+                            ->view('organization::filament.resources.organization-resource.components.permissions')
+                            ->formatStateUsing(fn (?Model $record) => $record?->permissions->pluck('id')->toArray() ?? [])
+                            ->dehydrated(true)
+                    ])
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed(),
             ]);
     }
 
@@ -99,6 +109,13 @@ class OrganizationResource extends Resource
             ], FiltersLayout::AboveContent)
             ->recordActions([
                 EditAction::make()
+                    ->using(function (Model $record, array $data): Model {
+                        $permissions = $data['permissions'] ?? [];
+                        unset($data['permissions']);
+                        $record->update($data);
+                        $record->permissions()->sync($permissions);
+                        return $record;
+                    })
                     ->disabled(function (Model $record) {
                         return $record->is_dont_delete && !auth()->user()->hasSuperAdmin();
                     }),
@@ -115,6 +132,7 @@ class OrganizationResource extends Resource
     {
         return [
             'index' => Pages\ListOrganizations::route('/'),
+            'create' => Pages\CreateOrganization::route('/create'),
         ];
     }
 

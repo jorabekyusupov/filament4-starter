@@ -1,1 +1,11 @@
-{}
+{
+    "email": "Elektron quti",
+    "first_name": "Ism",
+    "last_name": "Familya",
+    "middle_name": "Otasining ismi",
+    "password": "Parol",
+    "pinfl": "PINFL",
+    "user": "Foydalanuvchi",
+    "username": "Foydalanuvchi nomi",
+    "users": "Foydalanuvchilar"
+}

@@ -63,6 +63,7 @@ class OrganizationResource extends Resource
                 Section::make(__('Permissions'))
                     ->schema([
                         ViewField::make('permissions')
+                            ->label(__('permissions'))
                             ->view('organization::filament.resources.organization-resource.components.permissions')
                             ->formatStateUsing(fn (?Model $record) => $record?->permissions->pluck('id')->toArray() ?? [])
                             ->dehydrated(true)
@@ -133,6 +134,7 @@ class OrganizationResource extends Resource
         return [
             'index' => Pages\ListOrganizations::route('/'),
             'create' => Pages\CreateOrganization::route('/create'),
+            'edit' => Pages\EditOrganization::route('/{record}/edit'),
         ];
     }
 

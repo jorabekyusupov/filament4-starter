@@ -10,6 +10,8 @@ use Modules\Organization\Filament\Resources\OrganizationResource;
 
 class EditOrganization extends EditRecord
 {
+    use \Modules\Organization\Filament\Traits\ManagesPermissionSorting;
+
     protected static string $resource = OrganizationResource::class;
 
     protected function getHeaderActions(): array
@@ -19,5 +21,16 @@ class EditOrganization extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    {
+        $permissions = $data['permissions'] ?? [];
+        unset($data['permissions']);
+
+        $record->update($data);
+        $record->permissions()->sync($permissions);
+
+        return $record;
     }
 }

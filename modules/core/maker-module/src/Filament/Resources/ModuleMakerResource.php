@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -49,15 +50,15 @@ class ModuleMakerResource extends Resource
 
 
 
-    public static function form(Schema $form): Schema
+    public static function form(Schema $schema): Schema
     {
         $service = new \Modules\MakerModule\Services\ModuleMakerService();
 
-        return $form
+        return $schema
             ->schema([
 
-                \Filament\Schemas\Components\Wizard::make([
-                    \Filament\Schemas\Components\Wizard\Step::make(__('Module Details'))
+             Wizard::make([
+                   Wizard\Step::make(__('Module Details'))
                         ->description(__('Basic information about the module'))
                         ->icon('heroicon-o-information-circle')
                         ->schema([
@@ -95,7 +96,7 @@ class ModuleMakerResource extends Resource
                                 ]),
                         ]),
 
-                    \Filament\Schemas\Components\Wizard\Step::make(__('Database Structure'))
+               Wizard\Step::make(__('Database Structure'))
                         ->description(__('Define tables and columns'))
                         ->icon('heroicon-o-table-cells')
                         ->schema([
@@ -170,7 +171,7 @@ class ModuleMakerResource extends Resource
                                                         ->required()
                                                         ->visible(fn (Get $get) => $get('type') === 'foreignId'),
                                                     
-                                                    \Filament\Schemas\Components\Grid::make(3)
+                                                    Grid::make(3)
                                                         ->schema([
                                                             \Filament\Forms\Components\Toggle::make('nullable')
                                                                 ->label('Nullable')
@@ -197,7 +198,7 @@ class ModuleMakerResource extends Resource
                                 ->live(), // Important for next step to see changes
                         ]),
 
-                    \Filament\Schemas\Components\Wizard\Step::make(__('Resource Layouts'))
+                    Wizard\Step::make(__('Resource Layouts'))
                         ->description(__('Drag and drop to configure form layout'))
                         ->icon('heroicon-o-squares-plus')
                         ->schema([

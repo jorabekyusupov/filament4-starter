@@ -1,6 +1,15 @@
 {
-    "permission": "Ruxsatlar",
+    "permissions": "Ruxsatlar",
+    "permission": "Ruxsat",
     "role": "Rol",
     "role-permission": "Role imkoniyatlari",
-    "roles": "Rollar"
+    "roles": "Rollar",
+    "General": "Umumiy",
+    "Total Permissions": "Jami ruxsatlar",
+    "Done Sorting": "Saralash tugadi",
+    "Change Order (Swipe)": "Tartibni o'zgartirish (Swipe)",
+    "Drag to Reorder": "Qayta tartiblash uchun suring",
+    "Select All": "Barchasini tanlash",
+    "Unselect All": "Barchasini bekor qilish"
+
 }

@@ -1,6 +1,11 @@
 {
-  "role": "Роль",
-  "roles": "Роли",
-  "permission": "Разрешение",
-  "role-permission": "Разрешения ролей"
+    "General": "Общее",
+    "Total Permissions": "Всего разрешений",
+    "Done Sorting": "Сортировка завершена",
+    "Change Order (Swipe)": "Изменить порядок (свайп)",
+    "Drag to Reorder": "Перетащите для изменения порядка",
+    "Select All": "Выбрать все",
+    "Unselect All": "Отменить все",
+    "permissions": "разрешения",
+    "permission": "разрешение"
 }

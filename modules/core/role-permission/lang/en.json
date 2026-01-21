@@ -1,1 +1,11 @@
-{}
+{
+    "General": "General",
+    "Total Permissions": "Total Permissions",
+    "Done Sorting": "Done Sorting",
+    "Change Order (Swipe)": "Change Order (Swipe)",
+    "Drag to Reorder": "Drag to Reorder",
+    "Select All": "Select All",
+    "Unselect All": "Unselect All",
+    "permissions": "permissions",
+    "permission": "permission"
+}

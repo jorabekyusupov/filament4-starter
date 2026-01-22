@@ -114,7 +114,7 @@ class OrganizationResource extends Resource
                         $permissions = $data['permissions'] ?? [];
                         unset($data['permissions']);
                         $record->update($data);
-                        $record->permissions()->sync($permissions);
+                        $record->syncPermissionsAndUpdateModeratorRole($permissions);
                         return $record;
                     })
                     ->disabled(function (Model $record) {

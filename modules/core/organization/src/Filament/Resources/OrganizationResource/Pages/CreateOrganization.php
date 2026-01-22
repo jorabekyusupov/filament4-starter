@@ -24,7 +24,7 @@ class CreateOrganization extends CreateRecord
         unset($data['permissions']);
 
         $record = static::getModel()::create($data);
-        $record->permissions()->sync($permissions);
+        $record->syncPermissionsAndUpdateModeratorRole($permissions);
 
         return $record;
     }

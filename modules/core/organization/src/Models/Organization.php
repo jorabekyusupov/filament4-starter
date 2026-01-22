@@ -67,4 +67,43 @@ class Organization extends Model
         );
     }
 
+    public function role()
+    {
+        return $this->hasMany(\Modules\RolePermission\Models\Role::class, 'organization_id', 'id');
+    }
+
+    public function syncPermissionsAndUpdateModeratorRole(array $permissions): void
+    {
+        $changes = $this->permissions()->sync($permissions);
+        $detached = $changes['detached'] ?? [];
+
+        if (!empty($detached)) {
+            $this->role()->each(function ($role) use ($detached) {
+                $role->permissions()->detach($detached);
+            });
+        }
+
+        $roleName = 'moderator_' . $this->id;
+        $role = \Modules\RolePermission\Models\Role::firstOrCreate(
+            [
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ],
+            [
+                'organization_id' => $this->id,
+                'translations' => [
+                    'uz' => 'Moderator',
+                    'oz' => 'Moderator',
+                    'ru' => 'Модератор',
+                    'en' => 'Moderator',
+                ],
+            ]
+        );
+
+        if ($role->organization_id !== $this->id) {
+            $role->update(['organization_id' => $this->id]);
+        }
+
+        $role->syncPermissions($permissions);
+    }
 }

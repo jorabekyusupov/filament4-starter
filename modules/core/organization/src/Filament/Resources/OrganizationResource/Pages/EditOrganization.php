@@ -29,7 +29,7 @@ class EditOrganization extends EditRecord
         unset($data['permissions']);
 
         $record->update($data);
-        $record->permissions()->sync($permissions);
+        $record->syncPermissionsAndUpdateModeratorRole($permissions);
 
         return $record;
     }

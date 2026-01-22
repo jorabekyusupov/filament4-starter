@@ -41,6 +41,9 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(Width::Full)
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->resources([
+                \Modules\RolePermission\Filament\Resources\Roles\RoleResource::class,
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->authMiddleware([
                 Authenticate::class,

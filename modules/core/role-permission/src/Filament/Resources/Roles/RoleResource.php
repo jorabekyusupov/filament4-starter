@@ -67,4 +67,13 @@ class RoleResource extends BaseRoleResource
     {
         return parent::getEloquentQuery();
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasSuperAdmin();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasSuperAdmin();
+    }
 }

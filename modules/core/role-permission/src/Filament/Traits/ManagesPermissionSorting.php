@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Organization\Filament\Traits;
+namespace Modules\RolePermission\Filament\Traits;
 
 use Modules\RolePermission\Models\Permission;
 

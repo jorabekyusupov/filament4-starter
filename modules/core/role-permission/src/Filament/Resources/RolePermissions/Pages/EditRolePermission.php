@@ -1,25 +1,21 @@
 <?php
 
-namespace Modules\Organization\Filament\Resources\OrganizationResource\Pages;
+namespace Modules\RolePermission\Filament\Resources\RolePermissions\Pages;
 
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
-use Modules\Organization\Filament\Resources\OrganizationResource;
+use Modules\RolePermission\Filament\Resources\RolePermissions\RolePermissionResource;
 
-class EditOrganization extends EditRecord
+class EditRolePermission extends EditRecord
 {
     use \Modules\RolePermission\Filament\Traits\ManagesPermissionSorting;
 
-    protected static string $resource = OrganizationResource::class;
+    protected static string $resource = RolePermissionResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
         ];
     }
 

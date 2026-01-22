@@ -64,7 +64,7 @@ class OrganizationResource extends Resource
                     ->schema([
                         ViewField::make('permissions')
                             ->label(__('permissions'))
-                            ->view('organization::filament.resources.organization-resource.components.permissions')
+                            ->view('role-permission::filament.resources.role-permission-resource.components.permissions')
                             ->formatStateUsing(fn (?Model $record) => $record?->permissions->pluck('id')->toArray() ?? [])
                             ->dehydrated(true)
                     ])

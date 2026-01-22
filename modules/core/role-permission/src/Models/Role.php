@@ -14,4 +14,10 @@ class Role extends \Spatie\Permission\Models\Role
         'sort',
         'is_dont_delete'
     ];
+
+    protected $casts = [
+        'translations' => 'array',
+        'is_dont_delete' => 'boolean',
+        'sort' => 'integer',
+    ];
 }

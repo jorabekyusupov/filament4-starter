@@ -16,4 +16,11 @@ class Permission extends \Spatie\Permission\Models\Permission
         'module_sort',
         'sort'
     ];
+
+    protected $casts = [
+        'translations' => 'array',
+        'group_sort' => 'integer',
+        'module_sort' => 'integer',
+        'sort' => 'integer',
+    ];
 }

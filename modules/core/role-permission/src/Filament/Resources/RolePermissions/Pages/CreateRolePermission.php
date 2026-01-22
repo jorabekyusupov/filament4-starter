@@ -1,15 +1,15 @@
 <?php
 
-namespace Modules\Organization\Filament\Resources\OrganizationResource\Pages;
+namespace Modules\RolePermission\Filament\Resources\RolePermissions\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Modules\Organization\Filament\Resources\OrganizationResource;
+use Modules\RolePermission\Filament\Resources\RolePermissions\RolePermissionResource;
 
-class CreateOrganization extends CreateRecord
+class CreateRolePermission extends CreateRecord
 {
     use \Modules\RolePermission\Filament\Traits\ManagesPermissionSorting;
 
-    protected static string $resource = OrganizationResource::class;
+    protected static string $resource = RolePermissionResource::class;
 
     protected function getHeaderActions(): array
     {

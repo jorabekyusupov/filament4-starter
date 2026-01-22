@@ -7,5 +7,10 @@
     "Select All": "Выбрать все",
     "Unselect All": "Отменить все",
     "permissions": "разрешения",
-    "permission": "разрешение"
+    "permission": "разрешение",
+    "translations_uz": "переводы (узбекский)",
+    "translations_oz": "переводы (латиница)",
+    "translations_ru": "переводы (русский)",
+    "translations_en": "переводы (английский)",
+    "only_latins_characters_allowed": "Разрешены только латинские символы"
 }

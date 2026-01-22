@@ -1,11 +1,17 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
 @php
-    $groupedPermissions = \Modules\RolePermission\Models\Permission::query()
+    $query = \Modules\RolePermission\Models\Permission::query()
         ->orderBy('module_sort')
         ->orderBy('group_sort')
-        ->orderBy('sort')
-        ->get()
+        ->orderBy('sort');
+
+    if (! auth()->user()->hasSuperAdmin()) {
+         $userPermissionIds = auth()->user()->getAllPermissions()->pluck('id');
+         $query->whereIn('id', $userPermissionIds);
+    }
+
+    $groupedPermissions = $query->get()
         ->groupBy('module')
         ->map(function ($modulePermissions) {
             return $modulePermissions->groupBy('group');

@@ -83,7 +83,7 @@ class LanguageResource extends Resource
                         Language::query()->update(['is_default' => false]);
                     }),
                 ToggleColumn::make('status')
-                    ->label(__('default'))
+                    ->label(__('status'))
                     ->onColor('success')
                     ->offColor('danger')
                     ->onIcon('heroicon-o-check')

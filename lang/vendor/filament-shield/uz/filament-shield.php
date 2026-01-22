@@ -9,7 +9,7 @@ return [
 
     'column.name' => 'Исм',
     'column.guard_name' => 'Гвардия номи',
-    'column.roles' => 'Роллар',
+    'column.roles' => 'Ролларни бошқариш',
     'column.permissions' => 'Рухсатлар',
     'column.updated_at' => 'Янгиланган',
 
@@ -32,7 +32,7 @@ return [
     */
 
     'nav.group' => 'Созламалар',
-    'nav.role.label' => 'Роллар',
+    'nav.role.label' => 'Роллар (Тизим)',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Роль',
     'resource.label.roles' => 'Роллар',

@@ -53,39 +53,6 @@
         "namespace": "Modules\\RolePermission",
         "path": "modules\/core\/role-permission",
         "status": true,
-        "stable": false
-    },
-    {
-        "name": "orders",
-        "source": "admin",
-        "namespace": "Modules\\Orders",
-        "path": "modules\/orders",
-        "status": true,
-        "stable": false,
-        "tables": [
-            {
-                "name": "orders",
-                "soft_deletes": true,
-                "logged": true,
-                "status": true,
-                "columns": [
-                    {
-                        "name": "user_id",
-                        "type": "foreignId",
-                        "options": {
-                            "name": "user_id",
-                            "type": "foreignId",
-                            "related_model": "Modules\\User\\Models\\User",
-                            "related_column": "id",
-                            "nullable": false,
-                            "unique": false,
-                            "index": false
-                        }
-                    }
-                ]
-            }
-        ],
-        "created_at": "2026-01-21T12:55:40.101366Z",
-        "updated_at": "2026-01-21T12:55:40.101369Z"
+        "stable": true
     }
 ]

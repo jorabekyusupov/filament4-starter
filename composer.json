@@ -18,10 +18,6 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "modules/core": "*",
-        "modules/orders": "*",
-        "modules/products": "*",
-        "modules/region": "*",
-        "modules/regions": "*",
         "sajya/client": "@dev",
         "upgate/laravel-jsonrpc": "@dev"
     },

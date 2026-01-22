@@ -11,6 +11,7 @@ use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermis
 use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermissionInfolist;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Tables\RolePermissionsTable;
 use Modules\RolePermission\Models\Role;
+use UnitEnum;
 
 class RolePermissionResource extends Resource
 {
@@ -18,7 +19,20 @@ class RolePermissionResource extends Resource
 
     protected static ?string $slug = 'role-permissions';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-shield-check';
+
+    /**
+     * @return string|UnitEnum|null
+     */
+    public static function getNavigationGroup(): UnitEnum|string|null
+    {
+        return __('settings');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('roles');
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -17,6 +17,7 @@ return [
 
     'shield_resource' => [
         'slug' => 'shield/roles',
+        'should_register_navigation' => false,
         'show_model_path' => true,
         'cluster' => null,
         'tabs' => [

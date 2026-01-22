@@ -32,7 +32,7 @@ return [
     */
 
     'nav.group' => 'Настройки',
-    'nav.role.label' => 'Роли',
+    'nav.role.label' => 'Роли (Системные)',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Роль',
     'resource.label.roles' => 'Роли',

@@ -12,5 +12,8 @@
     "translations_oz": "переводы (латиница)",
     "translations_ru": "переводы (русский)",
     "translations_en": "переводы (английский)",
-    "only_latins_characters_allowed": "Разрешены только латинские символы"
+    "only_latins_characters_allowed": "Разрешены только латинские символы",
+    "roles_administration": "Администрирование ролей",
+    "roles" : "Роли",
+    "role" : "Роль"
 }

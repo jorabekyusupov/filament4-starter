@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
 
-        return $panel
+        $panel = $panel
             ->spa()
             ->login(action: CustomLogin::class)
             ->default()
@@ -64,8 +64,9 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
+
                 FilamentShieldPlugin::make()
-                 ->localizePermissionLabels()
+                    ->localizePermissionLabels()
                     ->gridColumns([
                         'default' => 1,
                         'sm' => 2,
@@ -81,8 +82,10 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
+                FilTheme::make(),
                 ModuleConnectService::make(),
-                FilTheme::make()
             ]);
+
+        return $panel;
     }
 }

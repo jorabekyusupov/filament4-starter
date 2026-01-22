@@ -9,7 +9,7 @@ return [
 
     'column.name' => 'Ism',
     'column.guard_name' => 'Gvardiya nomi',
-    'column.roles' => 'Rollar',
+    'column.roles' => 'Rollarni boshqarish',
     'column.permissions' => 'Ruxsatlar',
     'column.updated_at' => 'Yangilangan',
 
@@ -32,7 +32,7 @@ return [
     */
 
     'nav.group' => 'Sozlamalar',
-    'nav.role.label' => 'Rollar',
+    'nav.role.label' => 'Rollar (Tizim)',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Rol',
     'resource.label.roles' => 'Rollar',

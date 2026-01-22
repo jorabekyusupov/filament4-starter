@@ -21,10 +21,19 @@ class CreateOrganization extends CreateRecord
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         $permissions = $data['permissions'] ?? [];
-        unset($data['permissions']);
+        $moderatorId = $data['moderator_id'] ?? null;
+        unset($data['permissions'], $data['moderator_id']);
 
         $record = static::getModel()::create($data);
         $record->syncPermissionsAndUpdateModeratorRole($permissions);
+
+        if ($moderatorId) {
+            $roleName = 'moderator_' . $record->id;
+            $role = \Modules\RolePermission\Models\Role::where('name', $roleName)->first();
+            if ($role) {
+                $role->users()->sync([$moderatorId]);
+            }
+        }
 
         return $record;
     }

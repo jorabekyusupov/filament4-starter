@@ -67,7 +67,7 @@ class Organization extends Model
         );
     }
 
-    public function role()
+    public function roles()
     {
         return $this->hasMany(\Modules\RolePermission\Models\Role::class, 'organization_id', 'id');
     }
@@ -78,7 +78,7 @@ class Organization extends Model
         $detached = $changes['detached'] ?? [];
 
         if (!empty($detached)) {
-            $this->role()->each(function ($role) use ($detached) {
+            $this->roles()->each(function ($role) use ($detached) {
                 $role->permissions()->detach($detached);
             });
         }

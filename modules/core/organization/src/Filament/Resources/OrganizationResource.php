@@ -10,6 +10,8 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -24,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Organization\Filament\Resources\OrganizationResource\Pages;
 use Modules\Organization\Models\Organization;
+use Modules\User\Models\User;
 
 class OrganizationResource extends Resource
 {
@@ -60,12 +63,99 @@ class OrganizationResource extends Resource
         return $schema
             ->schema([
                 ...getNameInputsFilament(),
+                Select::make('moderator_id')
+                    ->label(__('Moderator'))
+                    ->options(User::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull()
+                    ->createOptionForm([
+                        TextInput::make('pin')
+                            ->columnSpanFull()
+                            ->mask(99999999999999)
+                            ->minValue(10000000000000)
+                            ->required()
+                            ->placeholder('12345678901234')
+                            ->numeric()
+                            ->label(__('pinfl')),
+                        \Filament\Schemas\Components\Grid::make(3)
+                            ->schema([
+                                \Filament\Forms\Components\TextInput::make('first_name')
+                                    ->label(__('first_name'))
+                                    ->placeholder('Aziz')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->live(),
+                                \Filament\Forms\Components\TextInput::make('last_name')
+                                    ->placeholder('Azizov')
+                                    ->label(__('last_name'))
+                                    ->maxLength(255)
+                                    ->live(),
+                                \Filament\Forms\Components\TextInput::make('middle_name')
+                                    ->placeholder('Azizovich')
+                                    ->label(__('middle_name'))
+                                    ->maxLength(255)
+                                    ->live(),
+                            ]),
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                \Filament\Forms\Components\TextInput::make('username')
+                                    ->required()
+                                    ->placeholder('aziz.azizov')
+                                    ->maxLength(255)
+                                    ->label(__('username'))
+                                    ->default(function (callable $get) {
+                                        $firstName = $get('first_name') ?? '';
+                                        $lastName = $get('last_name') ?? '';
+                                        if ($firstName && $lastName) {
+                                            return strtolower($firstName . $lastName);
+                                        }
+                                        return '';
+                                    })
+                                    ->unique('users', 'username'),
+                                \Filament\Forms\Components\TextInput::make('email')
+                                    ->email()
+                                    ->placeholder('aziz@info.com')
+                                    ->maxLength(255)
+                                    ->label(__('email'))
+                                    ->unique('users', 'email'),
+                            ]),
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                \Filament\Forms\Components\TextInput::make('password')
+                                    ->password()
+                                    ->label(__('password'))
+                                    ->placeholder('••••••••')
+                                    ->minLength(8)
+                                    ->maxLength(255)
+                                    ->dehydrated(fn($state) => filled($state))
+                                    ->required()
+                                    ->same('password_confirmation'),
+                                \Filament\Forms\Components\TextInput::make('password_confirmation')
+                                    ->password()
+                                    ->label(__('password_confirmation'))
+                                    ->placeholder('••••••••')
+                                    ->minLength(8)
+                                    ->maxLength(255)
+                                    ->dehydrated(false),
+                            ]),
+                    ])
+                    ->createOptionUsing(function (array $data) {
+                        return \Modules\User\Models\User::create($data)->id;
+                    })
+                    ->formatStateUsing(function (?Model $record) {
+                        if (!$record) return null;
+                        $roleName = 'moderator_' . $record->id;
+                        $role = \Modules\RolePermission\Models\Role::where('name', $roleName)->first();
+                        return $role ? $role->users()->first()?->id : null;
+                    })
+                    ->dehydrated(false),
                 Section::make(__('Permissions'))
                     ->schema([
                         ViewField::make('permissions')
                             ->label(__('permissions'))
                             ->view('role-permission::filament.resources.role-permission-resource.components.permissions')
-                            ->formatStateUsing(fn (?Model $record) => $record?->permissions->pluck('id')->toArray() ?? [])
+                            ->formatStateUsing(fn(?Model $record) => $record?->permissions->pluck('id')->toArray() ?? [])
                             ->dehydrated(true)
                     ])
                     ->columnSpanFull()

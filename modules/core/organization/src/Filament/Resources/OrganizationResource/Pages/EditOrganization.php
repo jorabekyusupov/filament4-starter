@@ -26,10 +26,19 @@ class EditOrganization extends EditRecord
     protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
         $permissions = $data['permissions'] ?? [];
-        unset($data['permissions']);
+        $moderatorId = $data['moderator_id'] ?? null;
+        unset($data['permissions'], $data['moderator_id']);
 
         $record->update($data);
         $record->syncPermissionsAndUpdateModeratorRole($permissions);
+
+        if ($moderatorId) {
+            $roleName = 'moderator_' . $record->id;
+            $role = \Modules\RolePermission\Models\Role::where('name', $roleName)->first();
+            if ($role) {
+                $role->users()->sync([$moderatorId]);
+            }
+        }
 
         return $record;
     }

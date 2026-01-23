@@ -14,15 +14,9 @@ class EditRole extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            $this->getSaveFormAction(),
-            $this->getCancelFormAction(),
             DeleteAction::make(),
         ];
     }
 
 
-    protected function getFormActions(): array
-    {
-        return [];
-    }
 }

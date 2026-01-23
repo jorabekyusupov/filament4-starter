@@ -17,7 +17,7 @@ class LanguageReadRepository implements LanguageReadRepositoryInterface
     public function getActiveLanguages()
     {
         if(!config('app.start')){
-            return ;
+            return collect([]);
         }
         return cache()
             ->rememberForever('languages', function () {

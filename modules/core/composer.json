@@ -19,8 +19,8 @@
         "laravel": {
             "providers": [
                 "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
-                "Modules\\User\\Providers\\UserServiceProvider",
                 "Modules\\Language\\Providers\\LanguageServiceProvider",
+                "Modules\\User\\Providers\\UserServiceProvider",
                 "Modules\\Organization\\Providers\\OrganizationServiceProvider",
                 "Modules\\Application\\Providers\\ApplicationServiceProvider",
                 "Modules\\Translate\\Providers\\TranslateServiceProvider",

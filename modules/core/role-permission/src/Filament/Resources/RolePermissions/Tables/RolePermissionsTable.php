@@ -15,19 +15,26 @@ class RolePermissionsTable
     {
         return $table
             ->columns([
-                TextColumn::make('team_id')
-                    ->label('Team Id'),
 
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('name_unique'))
                     ->searchable()
                     ->sortable(),
-
-                TextColumn::make('guard_name')
-                    ->label('Guard Name'),
-
-                TextColumn::make('organization_id')
-                    ->label('Organization Id'),
+                TextColumn::make('translations.' . app()->getLocale())
+                    ->label(__('name'))
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('permissions_count')
+                    ->label(__('permissions_count'))
+                    ->sortable()
+                    ->counts('permissions'),
+                TextColumn::make('organization.name.' . app()->getLocale())
+                    ->label(__('organization'))
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label(__('created_at'))
+                    ->dateTime(),
             ])
             ->filters([
                 //

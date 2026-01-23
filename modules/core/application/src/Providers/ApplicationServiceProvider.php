@@ -9,12 +9,12 @@ class ApplicationServiceProvider extends BaseServiceProvider
 {
 	public function register(): void
 	{
-        parent::register();
+		parent::register();
 	}
-	
+
 	public function boot(): void
 	{
-        $this->name = 'application';
-        parent::boot();
+		$this->name = 'application';
+		parent::boot();
 	}
 }

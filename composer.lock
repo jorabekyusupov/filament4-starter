@@ -4554,15 +4554,15 @@
             "dist": {
                 "type": "path",
                 "url": "modules/core",
-                "reference": "11a7499797a07afe48877d3ccfd7dba2fbf1117c"
+                "reference": "b012b85efc2884d5deaff691fb5478529b3db09d"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
-                        "Modules\\User\\Providers\\UserServiceProvider",
                         "Modules\\Language\\Providers\\LanguageServiceProvider",
+                        "Modules\\User\\Providers\\UserServiceProvider",
                         "Modules\\Organization\\Providers\\OrganizationServiceProvider",
                         "Modules\\Application\\Providers\\ApplicationServiceProvider",
                         "Modules\\Translate\\Providers\\TranslateServiceProvider",

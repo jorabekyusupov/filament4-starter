@@ -8,6 +8,8 @@ use Illuminate\Database\Seeder;
 use Modules\Language\Seeders\DefaultLangSeeder;
 use Modules\MakerModule\Seeders\MakerModuleSeeder;
 use Modules\Organization\Seeders\OrganizationSeeder;
+use Modules\RolePermission\Seeders\RolePermissionSeeder;
+use Modules\RolePermission\Seeders\ShieldSeeder;
 use Modules\User\Seeders\UserSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,12 +21,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
         $this->call([
             DefaultLangSeeder::class,
             MakerModuleSeeder::class,
             OrganizationSeeder::class,
             ShieldSeeder::class,
+            RolePermissionSeeder::class,
             UserSeeder::class,
         ]);
 

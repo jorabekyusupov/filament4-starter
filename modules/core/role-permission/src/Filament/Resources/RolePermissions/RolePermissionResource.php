@@ -31,7 +31,7 @@ class RolePermissionResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('roles');
+        return __('filament-shield::filament-shield.resource.label.roles');
     }
 
     public static function form(Schema $schema): Schema

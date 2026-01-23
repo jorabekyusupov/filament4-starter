@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->report(function (Throwable $e) {
             if (!app()->isProduction() && !app()->isLocal()) {
-                app(\App\Services\ExceptionSenderService::class)->errorSend($e);
+                app(\Modules\App\Services\ExceptionSenderService::class)->errorSend($e);
             }
         });
         //

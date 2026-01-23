@@ -12,7 +12,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $role = Role::query()
-            ->firstOrCreate([
+            ->updateOrCreate([
                 'name' => 'super_admin',
             ], [
                 'guard_name' => 'web',
@@ -23,7 +23,7 @@ class RolePermissionSeeder extends Seeder
                     'oz' => 'Super Admin',
                 ],
                 'is_dont_delete' => true,
-                'organization' => Organization::query()->defaultId(),
+                'organization_id' => Organization::query()->defaultId(),
             ]);
 
         $permissions = Permission::query()->pluck('name')->toArray();

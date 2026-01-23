@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Libraries\Batch;
+namespace Modules\App\Libraries\Batch;
 
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
-use App\Libraries\Batch\Common\Common;
 
 class Batch implements BatchInterface
 {

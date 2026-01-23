@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Libraries\Batch\Common;
+namespace Modules\App\Libraries\Batch\Common;
 
 use Illuminate\Support\Facades\DB;
 

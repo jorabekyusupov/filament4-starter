@@ -17,21 +17,7 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->after(function (User $record, UserCandidateSyncService $syncService) {
-                    try {
-                        $response = $syncService->sync($record);
-                        UserResource::notifyCandidateResponse($response);
-                    } catch (Throwable $exception) {
-                        report($exception);
-
-                        Notification::make()
-                            ->danger()
-                            ->title(__('error'))
-                            ->body(__('Failed to sync user with candidate service.'))
-                            ->send();
-                    }
-                }),
+            Actions\CreateAction::make(),
         ];
     }
 }

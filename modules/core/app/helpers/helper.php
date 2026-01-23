@@ -2,6 +2,15 @@
 
 use Illuminate\Database\Eloquent\Builder;
 
+if (! function_exists('batch'))
+{
+    function batch()
+    {
+        return app(\Modules\App\Libraries\Batch\Batch::class);
+    }
+}
+
+
 function getLocales(): array
 {
 

@@ -2,8 +2,7 @@
 
 namespace StubModuleNamespace\StubClassNamePrefix\Providers;
 
-use App\Providers\BaseServiceProvider;
-use Illuminate\Support\ServiceProvider;
+use Modules\App\Providers\BaseServiceProvider;
 
 class StubClassNamePrefixServiceProvider extends BaseServiceProvider
 {

@@ -4,9 +4,13 @@ namespace Modules\RolePermission\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Modules\RolePermission\Observers\PermissionObserver;
+
+#[ObservedBy([PermissionObserver::class])]
 class Permission extends \Spatie\Permission\Models\Permission
 {
-    protected $fillable =[
+    protected $fillable = [
         'name',
         'guard_name',
         'translations',

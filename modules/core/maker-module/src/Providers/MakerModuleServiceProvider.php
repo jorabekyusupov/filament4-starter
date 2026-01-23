@@ -2,14 +2,10 @@
 
 namespace Modules\MakerModule\Providers;
 
-use App\Providers\BaseServiceProvider;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Console\Events\CommandStarting;
 use Jora\Modular\Console\Commands\Make\MakeModule;
+use Modules\App\Providers\BaseServiceProvider;
 use Modules\MakerModule\Commands\AppFreshCommand;
 use Modules\MakerModule\Commands\SyncModuleCommand;
-use Modules\MakerModule\Seeders\MakerModuleSeeder;
 
 
 class MakerModuleServiceProvider extends BaseServiceProvider

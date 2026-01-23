@@ -340,5 +340,14 @@ class ModuleMakerResource extends Resource
         return [];
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasSuperAdmin();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasSuperAdmin();
+    }
 
 }

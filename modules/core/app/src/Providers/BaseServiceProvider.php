@@ -1,9 +1,7 @@
 <?php
 
-namespace App\Providers;
+namespace Modules\App\Providers;
 
-use Filament\Panel;
-use Filament\PanelProvider;
 use Illuminate\Support\ServiceProvider;
 
 abstract class BaseServiceProvider extends ServiceProvider

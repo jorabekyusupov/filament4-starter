@@ -7,6 +7,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Modules\Organization\Models\Organization;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermissionForm;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermissionInfolist;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Tables\RolePermissionsTable;
@@ -61,5 +63,15 @@ class RolePermissionResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['name'];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $defaultOrganizationId = Organization::query()->defaultId();
+        return parent::getEloquentQuery()
+            ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
+                $query->where('organization_id', auth()->user()->organization_id);
+            })
+            ->where('organization_id', '!=', $defaultOrganizationId);
     }
 }

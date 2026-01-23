@@ -4,6 +4,7 @@ namespace Modules\Organization\Filament\Resources\OrganizationResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
 use Modules\Organization\Filament\Resources\OrganizationResource;
+use Modules\User\Models\User;
 
 class CreateOrganization extends CreateRecord
 {
@@ -26,7 +27,9 @@ class CreateOrganization extends CreateRecord
 
         $record = static::getModel()::create($data);
         $record->syncPermissionsAndUpdateModeratorRole($permissions);
-
+        User::query()
+            ->find($moderatorId)
+            ->update(['organization_id' => $record->id]);
         if ($moderatorId) {
             $roleName = 'moderator_' . $record->id;
             $role = \Modules\RolePermission\Models\Role::where('name', $roleName)->first();

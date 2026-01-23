@@ -2,15 +2,15 @@
 
 namespace Modules\RolePermission\Models;
 
-use App\Policies\RolePolicy;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Organization\Models\Organization;
-use Modules\Organization\Policies\OrganizationPolicy;
+use Modules\RolePermission\Policies\RolePolicy;
 
 #[UsePolicy(RolePolicy::class)]
 class Role extends \Spatie\Permission\Models\Role
 {
+    use SoftDeletes;
     protected $fillable = [
         'name',
         'guard_name',

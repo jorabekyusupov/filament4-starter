@@ -2,7 +2,6 @@
 
 namespace Modules\Translate\Providers;
 
-use App\Providers\BaseServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 class TranslateServiceProvider extends ServiceProvider

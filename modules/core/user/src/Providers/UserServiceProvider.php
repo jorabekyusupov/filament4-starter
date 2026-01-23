@@ -2,8 +2,7 @@
 
 namespace Modules\User\Providers;
 
-use App\Providers\BaseServiceProvider;
-use Illuminate\Support\ServiceProvider;
+use Modules\App\Providers\BaseServiceProvider;
 
 class UserServiceProvider extends BaseServiceProvider
 {

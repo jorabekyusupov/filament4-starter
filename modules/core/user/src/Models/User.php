@@ -74,6 +74,19 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    //creating boot
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+           $user->name = "{$user->first_name} {$user->last_name}";
+        });
+        static::updating(function (User $user) {
+            if ($user->isDirty(['first_name', 'last_name'])) {
+                $user->name = "{$user->first_name} {$user->last_name}";
+            }
+        });
+
+    }
 
 
     public function canAccessPanel(Panel $panel): bool

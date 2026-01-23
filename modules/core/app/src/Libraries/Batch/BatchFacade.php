@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Libraries\Batch;
+namespace Modules\App\Libraries\Batch;
 
 use Illuminate\Support\Facades\Facade;
 

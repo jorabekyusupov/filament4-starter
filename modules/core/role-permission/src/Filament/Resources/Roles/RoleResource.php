@@ -4,7 +4,7 @@ namespace Modules\RolePermission\Filament\Resources\Roles;
 
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource as BaseRoleResource;
 
-// Biz yaratadigan sahifalar
+
 use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,13 +59,14 @@ class RoleResource extends BaseRoleResource
         return [
             'index' => Pages\ListRoles::route('/'),
             'create' => Pages\CreateRole::route('/create'),
-
             'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return Role::query()
+            ->with(['organization']);
+
     }
     public static function canAccess(): bool
     {

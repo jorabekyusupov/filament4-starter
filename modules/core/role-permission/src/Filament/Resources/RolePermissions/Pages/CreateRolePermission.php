@@ -22,6 +22,11 @@ class CreateRolePermission extends CreateRecord
     {
         $permissions = $data['permissions'] ?? [];
         unset($data['permissions']);
+        $data = array_merge([
+            'guard_name' => 'web',
+            'organization_id' => auth()->user()->organization_id,
+        ], $data);
+
 
         $record = static::getModel()::create($data);
         $record->permissions()->sync($permissions);

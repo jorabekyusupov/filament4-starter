@@ -24,6 +24,7 @@ use Filament\Forms\Components\ViewField;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Modules\Organization\Filament\Resources\OrganizationResource\Pages;
 use Modules\Organization\Models\Organization;
 use Modules\User\Models\User;
@@ -65,7 +66,39 @@ class OrganizationResource extends Resource
                 ...getNameInputsFilament(),
                 Select::make('moderator_id')
                     ->label(__('Moderator'))
-                    ->options(User::all()->pluck('name', 'id'))
+                    ->options(function () {
+                        $query = User::query()
+                            ->select([
+                                'id',
+                                DB::raw("CONCAT_WS(' ', first_name, last_name, middle_name) AS full_name")
+                            ])
+                            ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
+                                $query->where('organization_id', auth()->user()->organization_id);
+                            })
+                            ->limit(10);
+                        return $query->pluck('full_name', 'id')->toArray();
+                    })
+                    ->getSearchResultsUsing(function (string $search) {
+                        return User::query()
+                            ->select([
+                                'id',
+                                DB::raw("CONCAT_WS(' ', first_name, last_name, middle_name) AS full_name")
+                            ])
+                            ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
+                                $query->where('organization_id', auth()->user()->organization_id);
+                            })
+                            ->where(function (Builder $query) use ($search) {
+                                $query->where('first_name', 'like', "%{$search}%")
+                                    ->orWhere('last_name', 'like', "%{$search}%")
+                                    ->orWhere('middle_name', 'like', "%{$search}%")
+                                    ->orWhere('username', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%")
+                                    ->orWhere('pin', 'like', "%{$search}%");
+                            })
+                            ->limit(10)
+                            ->pluck('full_name', 'id')
+                            ->toArray();
+                    })
                     ->searchable()
                     ->preload()
                     ->columnSpanFull()
@@ -138,9 +171,13 @@ class OrganizationResource extends Resource
                                     ->minLength(8)
                                     ->maxLength(255)
                                     ->dehydrated(false),
+
                             ]),
                     ])
                     ->createOptionUsing(function (array $data) {
+                        $data = array_merge($data, [
+                            'type' => 'moderator',
+                        ]);
                         return \Modules\User\Models\User::create($data)->id;
                     })
                     ->formatStateUsing(function (?Model $record) {
@@ -208,11 +245,11 @@ class OrganizationResource extends Resource
                         return $record;
                     })
                     ->disabled(function (Model $record) {
-                        return $record->is_dont_delete && !auth()->user()->hasSuperAdmin();
+                        return ($record->is_dont_delete && !auth()->user()->hasSuperAdmin()) || $record->slug === 'default';
                     }),
                 DeleteAction::make()
                     ->disabled(function (Model $record) {
-                        return $record->is_dont_delete && !auth()->user()->hasSuperAdmin();
+                        return ($record->is_dont_delete && !auth()->user()->hasSuperAdmin()) || $record->slug === 'default';
                     }),
                 RestoreAction::make(),
 

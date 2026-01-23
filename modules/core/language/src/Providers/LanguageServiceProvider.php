@@ -2,7 +2,7 @@
 
 namespace Modules\Language\Providers;
 
-use App\Providers\BaseServiceProvider;
+use Modules\App\Providers\BaseServiceProvider;
 
 
 class LanguageServiceProvider extends BaseServiceProvider

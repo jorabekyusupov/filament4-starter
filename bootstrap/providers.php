@@ -3,5 +3,5 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
-    \App\Libraries\Batch\BatchServiceProvider::class
+    \Modules\App\Libraries\Batch\BatchServiceProvider::class
 ];

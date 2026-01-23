@@ -2,8 +2,7 @@
 
 namespace Modules\Organization\Providers;
 
-use App\Providers\BaseServiceProvider;
-use Illuminate\Support\ServiceProvider;
+use Modules\App\Providers\BaseServiceProvider;
 
 class OrganizationServiceProvider extends BaseServiceProvider
 {

@@ -122,9 +122,15 @@ class UserResource extends Resource
                                 return $query->selectRaw("id, name->'" . app()->getLocale() . "' as name")
                                     ->orderBy('name->>' . app()->getLocale(), 'desc');
                             })
-                            ->searchable(),
+                            ->searchable()
+                            ->hidden(fn() => !auth()->user()->hasSuperAdmin()),
                     ]),
-                Hidden::make('type')->default('admin'),
+                Hidden::make('type')
+                    ->default('employee'),
+                Hidden::make('organization_id')
+                    ->default(fn() => auth()->user()->organization_id)
+                    ->hidden(fn() => auth()->user()->hasSuperAdmin())
+                    ->disabled(fn() => auth()->user()->hasSuperAdmin()),
 
 
             ]);
@@ -173,7 +179,8 @@ class UserResource extends Resource
                         return $query->whereHas('organization', function ($query) use ($search) {
                             return getWhereTranslationColumns($query, 'name', $search);
                         });
-                    }, isIndividual: true),
+                    }, isIndividual: true)
+                    ->hidden(fn() => !auth()->user()->hasSuperAdmin()),
                 ToggleColumn::make('status')
                     ->label(__('status'))
                     ->onColor('success')
@@ -219,7 +226,10 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['organization']);
+            ->with(['organization'])
+            ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
+                $query->where('organization_id', auth()->user()->organization_id);
+            });
     }
 
     public static function getRelations(): array
@@ -247,7 +257,6 @@ class UserResource extends Resource
     {
         return __('users');
     }
-
 
 
 }

@@ -11,7 +11,8 @@
             "Modules\\Application\\": "application/src",
             "Modules\\Translate\\": "translate/src",
             "Modules\\RolePermission\\": "role-permission/src",
-            "Modules\\App\\": "app/src"
+            "Modules\\App\\": "app/src",
+            "Modules\\ActivityLog\\": "activity-log/src"
         }
     },
     "minimum-stability": "stable",
@@ -26,7 +27,8 @@
                 "Modules\\Application\\Providers\\ApplicationServiceProvider",
                 "Modules\\Translate\\Providers\\TranslateServiceProvider",
                 "Modules\\RolePermission\\Providers\\RolePermissionServiceProvider",
-                "Modules\\App\\Providers\\AppServiceProvider"
+                "Modules\\App\\Providers\\AppServiceProvider",
+                "Modules\\ActivityLog\\Providers\\ActivityLogServiceProvider"
             ]
         }
     }

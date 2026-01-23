@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use AlizHarb\ActivityLog\ActivityLogPlugin;
 use Filament\Http\Middleware\Authenticate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 
@@ -69,7 +70,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
 
-
                 FilamentShieldPlugin::make()
                     ->localizePermissionLabels()
                     ->gridColumns([
@@ -89,6 +89,8 @@ class AdminPanelProvider extends PanelProvider
                     ]),
                 FilTheme::make(),
                 ModuleConnectService::make(),
+
+                ActivityLogPlugin::make(),
             ]);
 
         return $panel;

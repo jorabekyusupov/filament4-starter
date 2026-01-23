@@ -6,10 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Modules\RolePermission\Observers\PermissionObserver;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[ObservedBy([PermissionObserver::class])]
 class Permission extends \Spatie\Permission\Models\Permission
 {
+    use LogsActivity;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll();
+    }
     protected $fillable = [
         'name',
         'guard_name',

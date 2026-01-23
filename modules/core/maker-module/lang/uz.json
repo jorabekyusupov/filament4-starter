@@ -1,9 +1,10 @@
 {
-  "settings": "Созламалар",
-  "language": "Тил",
-  "id": "ИД",
-  "name": "Номи",
-  "Created At": "Яратилган вақти",
-  "Updated At": "Янгиланган вақти",
-  "status": "Холати"
+    "Created At": "Яратилган вақти",
+    "Updated At": "Янгиланган вақти",
+    "actions": "Amallar",
+    "id": "ИД",
+    "language": "Тил",
+    "name": "Номи",
+    "settings": "Созламалар",
+    "status": "Холати"
 }

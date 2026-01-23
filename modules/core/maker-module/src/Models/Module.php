@@ -3,14 +3,13 @@
 namespace Modules\MakerModule\Models;
 
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
-use Illuminate\Database\Eloquent\Model;
-use Jora\Modular\Console\Commands\Make\MakeModule;
 use Modules\MakerModule\MakerModulePolicy;
 use Modules\User\Models\User;
+use Modules\App\Models\BaseModel;
 
 
 #[UsePolicy(MakerModulePolicy::class)]
-class Module extends Model
+class Module extends BaseModel
 {
     protected $table = 'modules';
 

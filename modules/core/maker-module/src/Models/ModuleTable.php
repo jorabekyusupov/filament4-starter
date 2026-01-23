@@ -2,9 +2,9 @@
 
 namespace Modules\MakerModule\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Modules\App\Models\BaseModel;
 
-class ModuleTable extends Model
+class ModuleTable extends BaseModel
 {
     protected $table = 'module_tables';
     protected $fillable = [

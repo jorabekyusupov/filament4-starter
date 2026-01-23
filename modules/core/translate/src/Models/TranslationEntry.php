@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Translate\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Modules\App\Models\BaseModel;
 
 /**
  * @property string $key
  * @property string $group
  */
-class TranslationEntry extends Model
+class TranslationEntry extends BaseModel
 {
     protected $table = 'translations';
 

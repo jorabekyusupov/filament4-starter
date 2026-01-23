@@ -11,6 +11,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
+use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
@@ -217,14 +219,29 @@ class UserResource extends Resource
 
             ], Tables\Enums\FiltersLayout::AboveContent)
             ->recordActions([
-             Action::make('login')
+                Action::make('login')
                     ->icon('heroicon-o-arrow-right-start-on-rectangle')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->hidden(fn() => !auth()->user()->hasSuperAdmin())
                     ->action(function (User $record) {
-                        auth()->login($record);
-                        return redirect('/admin');
+                    
+
+                        if (!$record->canAccessPanel(Filament::getCurrentPanel())) {
+                          
+                            Notification::make()
+                                ->title(__('Login Failed'))
+                                ->body(__('This user does not have access to the admin panel.'))
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+                        auth()->guard('web')->logout();
+                        session()->invalidate();
+                        session()->regenerateToken();
+                        auth()->guard('web')->login($record);
+                        session()->regenerate();
+                        return redirect()->to(Filament::getPanel('admin')->getUrl());
                     }),
                 EditAction::make()
                     ->disabled(fn(Model $record) => $record->dont_touch),
@@ -238,8 +255,10 @@ class UserResource extends Resource
         return parent::getEloquentQuery()
             ->with(['organization'])
             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
-                $query->where('organization_id', auth()->user()->organization_id);
-            });
+                $query->where('organization_id', auth()->user()->organization_id)
+                    ->where('type', '!=', 'superadmin');
+            })
+        ;
     }
 
     public static function getRelations(): array

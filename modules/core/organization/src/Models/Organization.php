@@ -4,14 +4,14 @@ namespace Modules\Organization\Models;
 
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\App\Models\BaseModel;
 use Modules\Organization\Policies\OrganizationPolicy;
 use Modules\RolePermission\Models\Permission;
 
 #[UsePolicy(OrganizationPolicy::class)]
-class Organization extends Model
+class Organization extends BaseModel
 {
     use SoftDeletes;
 

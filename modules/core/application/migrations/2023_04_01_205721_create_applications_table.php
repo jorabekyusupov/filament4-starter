@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->string('password');
             $table->string('webhook_url')->nullable();
             $table->text('secret_private_key')->nullable();
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
 

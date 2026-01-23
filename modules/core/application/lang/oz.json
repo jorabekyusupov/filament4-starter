@@ -1,1 +1,25 @@
-{}
+{
+    "General Information": "Umumiy maʼlumotlar",
+    "Basic details about the application.": "Ilova haqida asosiy maʼlumotlar.",
+    "Name": "Nom",
+    "e.g. CRM System": "masalan, CRM tizimi",
+    "Username": "Foydalanuvchi nomi",
+    "Integration Details": "Integratsiya tafsilotlari",
+    "Configuration for external communication.": "Tashqi aloqa sozlamalari.",
+    "Webhook URL": "Webhook URL",
+    "https://example.com/webhook": "https://example.com/webhook",
+    "Security Credentials": "Xavfsizlik maʼlumotlari",
+    "Manage authentication keys for this application.": "Ushbu ilova uchun autentifikatsiya kalitlarini boshqarish.",
+    "Password": "Parol",
+    "Leave empty to keep current password if editing.": "Agar o‘zgartirishni xohlamasangiz, bo‘sh qoldiring.",
+    "Secret Private Key": "Maxfiy shaxsiy kalit",
+    "Generated automatically": "Avtomatik yaratilgan",
+    "Regenerate": "Qayta yaratish",
+    "Regenerate Key": "Kalitni qayta yaratish",
+    "Secret Key": "Maxfiy kalit",
+    "Key Regenerated": "Kalit qayta yaratildi",
+    "Webhook URL copied": "Webhook URL nusxalandi",
+    "Created Date": "Yaratilgan sana",
+    "Last Modified Date": "Oxirgi o‘zgartirilgan sana",
+    "Webhook": "Webhook"
+}

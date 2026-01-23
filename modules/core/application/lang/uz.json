@@ -1,1 +1,25 @@
-{}
+{
+    "General Information": "Умумий маълумотлар",
+    "Basic details about the application.": "Илова ҳақида асосий маълумотлар.",
+    "Name": "Ном",
+    "e.g. CRM System": "масалан, CRM тизими",
+    "Username": "Фойдаланувчи номи",
+    "Integration Details": "Интеграция тафсилотлари",
+    "Configuration for external communication.": "Ташқи алоқа созламалари.",
+    "Webhook URL": "Webhook URL",
+    "https://example.com/webhook": "https://example.com/webhook",
+    "Security Credentials": "Хавфсизлик маълумотлари",
+    "Manage authentication keys for this application.": "Ушбу илова учун аутентификация калитларини бошқариш.",
+    "Password": "Парол",
+    "Leave empty to keep current password if editing.": "Агар ўзгартиришни хоҳламасангиз, бўш қолдиринг.",
+    "Secret Private Key": "Махфий шахсий калит",
+    "Generated automatically": "Автоматик яратилган",
+    "Regenerate": "Қайта яратиш",
+    "Regenerate Key": "Калитни қайта яратиш",
+    "Secret Key": "Махфий калит",
+    "Key Regenerated": "Калит қайта яратилди",
+    "Webhook URL copied": "Webhook URL нусхаланди",
+    "Created Date": "Яратилган сана",
+    "Last Modified Date": "Охирги ўзгартирилган сана",
+    "Webhook": "Webhook"
+}

@@ -1,1 +1,25 @@
-{}
+{
+    "General Information": "Общая информация",
+    "Basic details about the application.": "Основные данные о приложении.",
+    "Name": "Название",
+    "e.g. CRM System": "например, CRM-система",
+    "Username": "Имя пользователя",
+    "Integration Details": "Детали интеграции",
+    "Configuration for external communication.": "Настройки внешней коммуникации.",
+    "Webhook URL": "Webhook URL",
+    "https://example.com/webhook": "https://example.com/webhook",
+    "Security Credentials": "Учетные данные безопасности",
+    "Manage authentication keys for this application.": "Управление ключами аутентификации для этого приложения.",
+    "Password": "Пароль",
+    "Leave empty to keep current password if editing.": "Оставьте пустым, чтобы сохранить текущий пароль.",
+    "Secret Private Key": "Секретный закрытый ключ",
+    "Generated automatically": "Сгенерировано автоматически",
+    "Regenerate": "Пересоздать",
+    "Regenerate Key": "Пересоздать ключ",
+    "Secret Key": "Секретный ключ",
+    "Key Regenerated": "Ключ пересоздан",
+    "Webhook URL copied": "Webhook URL скопирован",
+    "Created Date": "Дата создания",
+    "Last Modified Date": "Дата последнего изменения",
+    "Webhook": "Webhook"
+}

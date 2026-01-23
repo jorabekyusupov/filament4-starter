@@ -1,0 +1,25 @@
+{
+  "name": "jora/starter-rpc",
+  "description": "RPC client for starter project",
+  "type": "library",
+  "version": "1.0.0",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Jora\\StarterRpc\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "jorabekyusupov",
+      "email": "info@jora.uz"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Jora\\StarterRpc\\Providers\\JRPCServiceProvider"
+      ]
+    }
+  }
+}

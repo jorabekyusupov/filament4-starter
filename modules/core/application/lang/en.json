@@ -1,1 +1,25 @@
-{}
+{
+    "General Information": "General Information",
+    "Basic details about the application.": "Basic details about the application.",
+    "Name": "Name",
+    "e.g. CRM System": "e.g. CRM System",
+    "Username": "Username",
+    "Integration Details": "Integration Details",
+    "Configuration for external communication.": "Configuration for external communication.",
+    "Webhook URL": "Webhook URL",
+    "https://example.com/webhook": "https://example.com/webhook",
+    "Security Credentials": "Security Credentials",
+    "Manage authentication keys for this application.": "Manage authentication keys for this application.",
+    "Password": "Password",
+    "Leave empty to keep current password if editing.": "Leave empty to keep current password if editing.",
+    "Secret Private Key": "Secret Private Key",
+    "Generated automatically": "Generated automatically",
+    "Regenerate": "Regenerate",
+    "Regenerate Key": "Regenerate Key",
+    "Secret Key": "Secret Key",
+    "Key Regenerated": "Key Regenerated",
+    "Webhook URL copied": "Webhook URL copied",
+    "Created Date": "Created Date",
+    "Last Modified Date": "Last Modified Date",
+    "Webhook": "Webhook"
+}

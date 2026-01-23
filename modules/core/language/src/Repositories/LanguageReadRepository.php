@@ -10,13 +10,12 @@ class LanguageReadRepository implements LanguageReadRepositoryInterface
 
     public function __construct(
         protected Language $model
-    )
-    {
+    ) {
     }
 
     public function getActiveLanguages()
     {
-        if(!config('app.start')){
+        if (!config('app.start') || !\Illuminate\Support\Facades\Schema::hasTable('languages')) {
             return collect([]);
         }
         return cache()

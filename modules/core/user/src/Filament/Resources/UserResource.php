@@ -2,6 +2,7 @@
 
 namespace Modules\User\Filament\Resources;
 
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
@@ -216,6 +217,15 @@ class UserResource extends Resource
 
             ], Tables\Enums\FiltersLayout::AboveContent)
             ->recordActions([
+             Action::make('login')
+                    ->icon('heroicon-o-arrow-right-start-on-rectangle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->hidden(fn() => !auth()->user()->hasSuperAdmin())
+                    ->action(function (User $record) {
+                        auth()->login($record);
+                        return redirect('/admin');
+                    }),
                 EditAction::make()
                     ->disabled(fn(Model $record) => $record->dont_touch),
                 DeleteAction::make()
@@ -243,7 +253,7 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-//            'create' => Pages\CreateUser::route('/create'),
+            //            'create' => Pages\CreateUser::route('/create'),
 //            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

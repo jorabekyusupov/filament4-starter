@@ -22,7 +22,7 @@ class ModuleConnectService implements Plugin
     {
 
 
-        if (config('app.start')) {
+        if (config('app.start') && \Illuminate\Support\Facades\Schema::hasTable('modules')) {
             $modules = Module::query()
                 ->where('status', true)
                 ->when(app()->isProduction(), function ($query) {

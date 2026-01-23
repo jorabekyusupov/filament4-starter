@@ -23,6 +23,11 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, SoftDeletes;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -78,7 +83,7 @@ class User extends Authenticatable implements FilamentUser
     protected static function booted(): void
     {
         static::creating(function (User $user) {
-           $user->name = "{$user->first_name} {$user->last_name}";
+            $user->name = "{$user->first_name} {$user->last_name}";
         });
         static::updating(function (User $user) {
             if ($user->isDirty(['first_name', 'last_name'])) {

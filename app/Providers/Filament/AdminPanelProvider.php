@@ -71,7 +71,7 @@ class AdminPanelProvider extends PanelProvider
 
 
                 FilamentShieldPlugin::make()
-                     ->localizePermissionLabels()
+                    ->localizePermissionLabels()
                     ->gridColumns([
                         'default' => 1,
                         'sm' => 2,

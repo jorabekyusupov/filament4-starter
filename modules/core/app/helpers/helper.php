@@ -2,8 +2,7 @@
 
 use Illuminate\Database\Eloquent\Builder;
 
-if (! function_exists('batch'))
-{
+if (!function_exists('batch')) {
     function batch()
     {
         return app(\Modules\App\Libraries\Batch\Batch::class);
@@ -142,11 +141,11 @@ function parsePinfl(string $pinfl): array
     }
 
     // bo‘lib olamiz
-    $index = (int)substr($pinfl, 0, 1);   // 1-raqam
+    $index = (int) substr($pinfl, 0, 1);   // 1-raqam
     $birthRaw = substr($pinfl, 1, 6);         // DDMMYY
     $regionCode = substr($pinfl, 7, 3);         // 8-10
     $orderNumber = substr($pinfl, 10, 3);        // 11-13
-    $controlDigit = (int)substr($pinfl, 13, 1);  // 14
+    $controlDigit = (int) substr($pinfl, 13, 1);  // 14
 
     // indeks 1–8 oralig‘ida bo‘lishi kerak
     if ($index < 1 || $index > 8) {
@@ -158,10 +157,10 @@ function parsePinfl(string $pinfl): array
     $genderText = $gender === 'M' ? 'male' : 'famale';
 
     // tug‘ilgan sana elementlari
-    $day = (int)substr($birthRaw, 0, 2);
-    $month = (int)substr($birthRaw, 2, 2);
-    $year = (int)substr($birthRaw, 4, 2);
-    $centuryStart = 1800 + (int)floor(($index - 1) / 2) * 100;
+    $day = (int) substr($birthRaw, 0, 2);
+    $month = (int) substr($birthRaw, 2, 2);
+    $year = (int) substr($birthRaw, 4, 2);
+    $centuryStart = 1800 + (int) floor(($index - 1) / 2) * 100;
     $fullYear = $centuryStart + $year;
 
     // ISO ko‘rinishdagi sana
@@ -225,4 +224,24 @@ function getNameInputsFilament($name = 'name', $required = true, $description = 
             ->tabs($tabs)
             ->columnSpanFull()
     ];
+}
+
+if (!function_exists('settings')) {
+    /**
+     * Get a setting value.
+     *
+     * @param string|null $key
+     * @param mixed $default
+     * @return mixed|\Modules\Setting\Services\SettingService
+     */
+    function settings(?string $key = null, mixed $default = null): mixed
+    {
+        $service = app(\Modules\Setting\Services\SettingService::class);
+
+        if (is_null($key)) {
+            return $service;
+        }
+
+        return $service->get($key, $default);
+    }
 }

@@ -3,19 +3,15 @@
 namespace App\Providers\Filament;
 
 use AlizHarb\ActivityLog\ActivityLogPlugin;
-use Filament\Http\Middleware\Authenticate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-
+use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Assets\Css;
-use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
-use Filament\Support\Facades\FilamentAsset;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -26,6 +22,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jora\FilTheme\FilTheme;
 use Modules\MakerModule\Services\ModuleConnectService;
+use Modules\Setting\Filament\Resources\SettingResource;
 use Modules\User\Filament\Pages\CustomLogin;
 
 class AdminPanelProvider extends PanelProvider
@@ -45,6 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->resources([
                 \Modules\RolePermission\Filament\Resources\Roles\RoleResource::class,
+                SettingResource::class
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->authMiddleware([
@@ -89,8 +87,8 @@ class AdminPanelProvider extends PanelProvider
                     ]),
                 FilTheme::make(),
                 ModuleConnectService::make(),
-
                 ActivityLogPlugin::make(),
+
             ]);
 
         return $panel;

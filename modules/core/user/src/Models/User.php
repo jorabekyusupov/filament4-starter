@@ -22,7 +22,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[UsePolicy(UserPolicy::class)]
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<\Modules\User\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, SoftDeletes,LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
@@ -33,7 +33,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected static function newFactory()
     {
-        return \Database\Factories\UserFactory::new();
+        return \Modules\User\Factories\UserFactory::new();
     }
 
     /**

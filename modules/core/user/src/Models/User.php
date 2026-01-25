@@ -4,6 +4,7 @@ namespace Modules\User\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -20,10 +21,10 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 #[UsePolicy(UserPolicy::class)]
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Modules\User\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes,LogsActivity;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -57,6 +58,9 @@ class User extends Authenticatable implements FilamentUser
         'created_by',
         'updated_by',
         'deleted_by',
+        'photo_base64',
+        'photo_mime',
+        'photo_path',
         'tg_id',
         'dont_touch',
         'candidate_user_id'
@@ -96,6 +100,20 @@ class User extends Authenticatable implements FilamentUser
         static::updating(function (User $user) {
             if ($user->isDirty(['first_name', 'last_name'])) {
                 $user->name = "{$user->first_name} {$user->last_name}";
+            }
+        });
+
+        static::saving(function (User $user) {
+            if ($user->isDirty('photo_path')) {
+                if ($user->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->photo_path)) {
+                    $content = \Illuminate\Support\Facades\Storage::disk('public')->get($user->photo_path);
+                    $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($user->photo_path);
+                    $user->photo_base64 = base64_encode($content);
+                    $user->photo_mime = $mime;
+                } else {
+                    $user->photo_base64 = null;
+                    $user->photo_mime = null;
+                }
             }
         });
 
@@ -171,6 +189,21 @@ class User extends Authenticatable implements FilamentUser
     public function getFilamentName(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+    public function getFilamentAvatarUrl(): ?string
+    {
+
+        if ($this->photo_base64 && $this->photo_mime) {
+            return "data:{$this->photo_mime};base64,{$this->photo_base64}";
+        }
+
+        if ($this->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo_path)) {
+            $content = \Illuminate\Support\Facades\Storage::disk('public')->get($this->photo_path);
+            $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($this->photo_path);
+            $base64 = base64_encode($content);
+            return "data:{$mime};base64,{$base64}";
+        }
+        return null;
     }
 
 }

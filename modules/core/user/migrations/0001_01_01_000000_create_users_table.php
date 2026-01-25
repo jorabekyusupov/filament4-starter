@@ -25,6 +25,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('pin')->nullable()->index();
             $table->boolean('status')->default(false)->index();
             $table->string('tg_id')->nullable()->index();
+            $table->text("photo_base64")->nullable();
+            $table->string("photo_mime")->nullable();
+            $table->string("photo_path")->nullable();
             $table->unsignedBigInteger('created_by')->nullable()->index();
             $table->unsignedBigInteger('updated_by')->nullable()->index();
             $table->unsignedBigInteger('deleted_by')->nullable()->index();

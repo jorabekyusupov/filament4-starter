@@ -39,6 +39,18 @@ class UserResource extends Resource
 
         return $schema
             ->schema([
+
+                \Filament\Forms\Components\FileUpload::make('photo_path')
+                    ->label(__('avatar'))
+                    ->disk('public')
+                    ->directory('avatars')
+                    ->visibility('public')
+                    ->image()
+                    ->avatar()
+                    ->alignCenter()
+                    ->circleCropper()
+                    ->columnSpanFull(),
+
                 TextInput::make('pin')
                     ->columnSpanFull()
                     ->mask(99999999999999)
@@ -47,7 +59,6 @@ class UserResource extends Resource
                     ->placeholder('12345678901234')
                     ->numeric()
                     ->label(__('pinfl')),
-
                 Grid::make(3)
                     ->schema([
                         TextInput::make('first_name')
@@ -144,6 +155,16 @@ class UserResource extends Resource
         return $table
             ->striped()
             ->columns([
+                Tables\Columns\ImageColumn::make("photo_base64")
+                    ->label(__('avatar'))
+                    ->circular()
+                    ->getStateUsing(function ($record) {
+                        if ($record->photo_base64) {
+                            return 'data:' . $record->photo_mime . ';base64,' . $record->photo_base64;
+                        }
+                        return $record->photo_path ? asset('storage/avatars' . $record->photo_path) : null;
+                    })
+                    ->size(40),
                 Tables\Columns\TextColumn::make('id')
                     ->label(__('ID'))
                     ->sortable()
@@ -225,10 +246,10 @@ class UserResource extends Resource
                     ->requiresConfirmation()
                     ->hidden(fn() => !auth()->user()->hasSuperAdmin())
                     ->action(function (User $record) {
-                    
+
 
                         if (!$record->canAccessPanel(Filament::getCurrentPanel())) {
-                          
+
                             Notification::make()
                                 ->title(__('Login Failed'))
                                 ->body(__('This user does not have access to the admin panel.'))
@@ -257,8 +278,7 @@ class UserResource extends Resource
             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
                 $query->where('organization_id', auth()->user()->organization_id)
                     ->where('type', '!=', 'superadmin');
-            })
-        ;
+            });
     }
 
     public static function getRelations(): array

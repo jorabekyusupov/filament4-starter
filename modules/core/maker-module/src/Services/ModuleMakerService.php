@@ -218,6 +218,18 @@ class ModuleMakerService
             mkdir($resourcesDir, 0755, true);
         }
 
+        // Extract configuration for this specific resource
+        $layoutConfig = collect($formLayoutData['resource_layouts'] ?? [])
+            ->firstWhere('table_name', $resourceData['table_name'] ?? $columns[0]['table_name'] ?? '');
+
+        // Defaults
+        $navLabel = $layoutConfig['navigation_label'] ?? Str::title(Str::plural($resourceName));
+        $navGroup = $layoutConfig['navigation_group'] ?? 'Content';
+        $navIcon = $layoutConfig['navigation_icon'] ?? 'heroicon-o-rectangle-stack';
+        $navSort = $layoutConfig['navigation_sort'] ?? 1;
+        $modelLabel = $layoutConfig['model_label'] ?? Str::title($modelName);
+        $pluralModelLabel = $layoutConfig['plural_model_label'] ?? Str::title(Str::plural($modelName));
+
         $resourceFileContent = str_replace(
             [
                 'StubModuleNamespace',
@@ -225,7 +237,13 @@ class ModuleMakerService
                 'StubTableName',
                 'StubTableNames',
                 'StubForm',
-                'StubTable'
+                'StubTable',
+                'StubNavigationLabel',
+                'StubNavigationGroup',
+                'StubNavigationIcon',
+                'StubNavigationSort',
+                'StubModelLabel',
+                'StubPluralModelLabel'
             ],
             [
                 'Modules',
@@ -233,7 +251,13 @@ class ModuleMakerService
                 $modelName,
                 Str::plural($resourceName),
                 $modelName . 'Form',
-                $modelName . 'Table'
+                $modelName . 'Table',
+                $navLabel,
+                $navGroup,
+                $navIcon,
+                $navSort,
+                $modelLabel,
+                $pluralModelLabel
             ],
             $stub
         );

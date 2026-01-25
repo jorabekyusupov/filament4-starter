@@ -15,11 +15,11 @@ class StubTableNameResource extends Resource
 {
     protected static ?string $model = StubTableName::class;
 
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | BackedEnum | null $navigationIcon = 'StubNavigationIcon';
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Content';
+    protected static string|null|\UnitEnum $navigationGroup = 'StubNavigationGroup';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = StubNavigationSort;
 
     protected static ?string $recordTitleAttribute = 'id';
 
@@ -52,32 +52,32 @@ class StubTableNameResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'StubTableNames';
+        return 'StubNavigationLabel';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'StubTableNames';
+        return 'StubPluralModelLabel';
     }
 
     public static function getModelLabel(): string
     {
-        return 'StubTableName';
+        return 'StubModelLabel';
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Content';
+        return 'StubNavigationGroup';
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 1;
+        return StubNavigationSort;
     }
 
     public static function getNavigationIcon(): ?string
     {
-        return 'heroicon-o-rectangle-stack';
+        return 'StubNavigationIcon';
     }
 
     public static function getRecordTitleAttribute(): ?string

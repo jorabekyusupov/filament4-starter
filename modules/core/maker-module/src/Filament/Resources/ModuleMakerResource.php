@@ -220,6 +220,29 @@ class ModuleMakerResource extends Resource
                                         ->required()
                                         ->live(),
 
+                                    Grid::make(3)
+                                        ->schema([
+                                            TextInput::make('model_label')
+                                                ->label(__('Model Label'))
+                                                ->placeholder('Product'),
+                                            TextInput::make('plural_model_label')
+                                                ->label(__('Plural Model Label'))
+                                                ->placeholder('Products'),
+                                            TextInput::make('navigation_label')
+                                                ->label(__('Navigation Label'))
+                                                ->placeholder('Products'),
+                                            TextInput::make('navigation_icon')
+                                                ->label(__('Navigation Icon'))
+                                                ->default('heroicon-o-rectangle-stack'),
+                                            TextInput::make('navigation_group')
+                                                ->label(__('Navigation Group'))
+                                                ->placeholder('Shop'),
+                                            TextInput::make('navigation_sort')
+                                                ->label(__('Sort Order'))
+                                                ->numeric()
+                                                ->default(1),
+                                        ]),
+
                                     \Filament\Forms\Components\ViewField::make('schema')
                                         ->label(function (Get $get) {
                                             $tables = $get('../../tables') ?? $get('../../../tables') ?? [];

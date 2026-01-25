@@ -234,6 +234,24 @@
                             <div>
                                 <div class="item-label" x-text="item.label || item.name"></div>
                                 <div class="item-type" x-text="item.type"></div>
+                                
+                                <!-- Extended Configuration -->
+                                <div style="margin-top: 5px; font-size: 11px; display: flex; flex-direction: column; gap: 3px;">
+                                    <!-- Translatable (For json/text OR foreignId relations) -->
+                                    <template x-if="['json', 'jsonb', 'text', 'longText'].includes(item.dbType) || item.dbType === 'foreignId' || item.name.endsWith('_id')">
+                                        <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                                            <input type="checkbox" x-model="item.is_translatable"> <span x-text="(item.dbType === 'foreignId' || item.name.endsWith('_id')) ? 'Rel. Translatable' : 'Translatable'"></span>
+                                        </label>
+                                    </template>
+                                    
+                                    <!-- Related Column (For manual foreign key mapping) -->
+                                     <template x-if="item.dbType === 'foreignId' || item.name.endsWith('_id')">
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                           <span style="opacity:0.7">Rel. Col:</span>
+                                           <input type="text" x-model="item.related_column" placeholder="name" style="border:1px solid var(--border-color); border-radius:3px; padding:1px 4px; font-size:10px; width: 60px;">
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                             <div style="margin-left: auto; display: flex; gap: 5px;">
                                 <input type="checkbox" x-model="item.sortable" title="Sortable"> <span style="font-size:10px; color:var(--text-muted)">Sort</span>
@@ -377,9 +395,12 @@
                                 name: this.draggedData.name,
                                 label: this.draggedData.name.charAt(0).toUpperCase() + this.draggedData.name.slice(1),
                                 type: 'TextColumn',
+                                dbType: this.draggedData.type, // Store original DB type
                                 icon: 'fas fa-font',
                                 sortable: true,
-                                searchable: true
+                                searchable: true,
+                                is_translatable: false,
+                                related_column: 'name' // Default for relations
                             };
                         } else if (this.draggedType === 'column_type' && zone === 'columns') {
                             item = {

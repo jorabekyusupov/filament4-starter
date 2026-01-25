@@ -27,6 +27,9 @@ class ModuleMakerService
         $commandName = $moduleGroup ? $moduleGroup . '/' . $moduleSlug : $moduleSlug;
         
         $tables = $data['tables'] ?? [];
+        // Extract layouts arrays
+        $resourceLayouts = $data['resource_layouts'] ?? [];
+        $tableLayouts = $data['table_layouts'] ?? [];
         
 
         $moduleModel = $this->createModule($pureName, $studlyModuleName, $commandName, $tables);
@@ -73,10 +76,13 @@ class ModuleMakerService
                     ];
                     
                     // Find layout for this table
-                    $tableLayout = collect($data['resource_layouts'] ?? [])->firstWhere('table_name', $tableName);
-                    $layoutSchema = $tableLayout['schema'] ?? [];
+                    $tableLayout = collect($resourceLayouts)->firstWhere('table_name', $tableName);
+                    $formSchema = $tableLayout['schema'] ?? [];
 
-                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsAssociative, $layoutSchema);
+                    $tableBuilder = collect($tableLayouts)->firstWhere('table_name', $tableName);
+                    $tableSchema = $tableBuilder['schema'] ?? [];
+
+                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsAssociative, $formSchema, $tableSchema);
                 }
 
                 foreach ($columns as $col) {
@@ -183,19 +189,19 @@ class ModuleMakerService
         ]);
     }
 
-    public function createFilamentResource($commandName, $moduleName, $resourceData, $columns, $layoutData)
+    public function createFilamentResource($commandName, $moduleName, $resourceData, $columns, $formLayoutData, $tableLayoutData = [])
     {
         $resourceName = Str::studly($resourceData['name']);
         $modelName = Str::studly($resourceData['model_name'] ?? Str::singular($resourceData['name']));
 
         // Create the main Resource file
-        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData);
+        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData);
 
         // Create Resource Pages
         $this->createResourcePages($commandName, $moduleName, $resourceName, $modelName);
     }
 
-    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData)
+    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData = [])
     {
         $resourceFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource.php");
         $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/StubTableNameResource.php'));
@@ -222,8 +228,11 @@ class ModuleMakerService
             $stub
         );
 
-        $formSchema = $this->generateFormSchema($columns, $layoutData);
+        $formSchema = $this->generateFormSchema($columns, $formLayoutData);
         $resourceFileContent = str_replace('// Add your form fields here', $formSchema, $resourceFileContent);
+
+        $tableSchema = $this->generateTableSchema($columns, $tableLayoutData);
+        $resourceFileContent = str_replace('// Add your table columns here', $tableSchema, $resourceFileContent);
 
         file_put_contents($resourceFile, $resourceFileContent);
     }
@@ -601,6 +610,9 @@ class ModuleMakerService
                         $colData = $columns[$colName];
                         $colType = is_array($colData) ? $colData['type'] : $colData;
                         $colMeta = is_array($colData) ? $colData : [];
+                        
+                        // Pass advanced related_column info if needed, but getFieldString handles inferring.
+                        // However, we want strict custom query logic for relations now.
                         $components[] = $this->getFieldString($colName, $colType, $colMeta);
                     } elseif ($colName) {
                          // Fallback if type not found (shouldn't happen if validated)
@@ -671,19 +683,21 @@ class ModuleMakerService
         if ($type === 'foreignId') {
             $relatedModel = $metadata['related_model'] ?? null;
             $relatedColumn = $metadata['related_column'] ?? 'name';
+            $isTranslatable = $metadata['is_translatable'] ?? false; // Check flag
             
             if (!$relatedModel) {
-                 // Try to infer if missing
                  $relatedModel = Str::studly(str_replace('_id', '', $name));
             }
             
-            // Name for Select::make should be the column name (e.g. author_id)
-            // But relationship method name usually: author
-            // Filament Select::make('author_id')->relationship('author', 'name')
-            // Infer relation name from column: user_id -> user
             $relationName = Str::camel(str_replace('_id', '', $name));
 
-            return "\Filament\Forms\Components\Select::make('{$name}')\n                    ->label('{$label}')\n                    ->relationship('{$relationName}', '{$relatedColumn}')\n                    ->searchable()\n                    ->preload()";
+            // Custom query logic ONLY if translatable
+            if ($isTranslatable) {
+                return "\Filament\Forms\Components\Select::make('{$name}')\n                    ->label('{$label}')\n                    ->relationship('{$relationName}', '{$relatedColumn}', function (\$query) {\n                        return \$query->selectRaw(\"id, {$relatedColumn}->'\" . app()->getLocale() . \"' as {$relatedColumn}\")\n                            ->orderBy('{$relatedColumn}->>' . app()->getLocale(), 'desc');\n                    })\n                    ->searchable()\n                    ->preload()\n                    ->hidden(fn() => !auth()->user()->hasSuperAdmin())";
+            } else {
+                // Standard relationship
+                return "\Filament\Forms\Components\Select::make('{$name}')\n                    ->label('{$label}')\n                    ->relationship('{$relationName}', '{$relatedColumn}')\n                    ->searchable()\n                    ->preload()";
+            }
         }
         
         // Basic type mapping
@@ -715,5 +729,51 @@ class ModuleMakerService
             default:
                 return "\Filament\Forms\Components\TextInput::make('{$name}')->label('{$label}')";
         }
+    }
+
+    private function generateTableSchema(array $columns, array $builderBlocks): string
+    {
+        if (empty($builderBlocks['columns'] ?? [])) {
+             // Fallback
+             return "";
+        }
+
+        $components = [];
+
+        foreach ($builderBlocks['columns'] as $col) {
+             $name = $col['name'];
+             $label = $col['label'] ?? Str::headline($name);
+             $isSortable = $col['sortable'] ?? false ? '->sortable()' : '';
+             $isSearchable = $col['searchable'] ?? false ? '->searchable()' : '';
+             
+             // Advanced Features
+             $isTranslatable = $col['is_translatable'] ?? false;
+             $relatedColumn = $col['related_column'] ?? 'name';
+
+             if ($isTranslatable) {
+                 if ($col['dbType'] === 'foreignId' || str_ends_with($name, '_id')) {
+                     // Translatable Relationship
+                     $relationName = Str::camel(str_replace('_id', '', $name));
+                     $nameField = "'{$relationName}.{$relatedColumn}.' . app()->getLocale()";
+                 } else {
+                     // Translatable Column
+                     $nameField = "'{$name}.' . app()->getLocale()";
+                 }
+             } elseif ($col['dbType'] === 'foreignId' || str_ends_with($name, '_id')) {
+                 // Standard Relationship
+                 $relationName = Str::camel(str_replace('_id', '', $name));
+                 $nameField = "'{$relationName}.{$relatedColumn}'";
+             } else {
+                 // Standard Column
+                 $nameField = "'{$name}'";
+             }
+
+             $type = $col['type'] ?? 'TextColumn';
+             $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label('{$label}'){$isSortable}{$isSearchable}";
+             
+             $components[] = $cmp;
+        }
+
+        return implode(",\n                ", $components);
     }
 }

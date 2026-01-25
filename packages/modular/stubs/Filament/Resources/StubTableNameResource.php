@@ -5,9 +5,9 @@ namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources;
 use Filament\Schemas\Schema;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 
 use StubModuleNamespace\StubSubModulePrefix\Models\StubTableName;

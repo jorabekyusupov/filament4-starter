@@ -510,7 +510,19 @@
                         if (type === 'section') return { id, type, data: { label: 'Section Title', schema: [] } };
                         if (type === 'fieldset') return { id, type, data: { label: 'New Group', schema: [] } };
                         if (type === 'tabs') return { id, type, data: { tabs: [{label: 'Tab 1', schema: []}] } };
-                        if (type === 'field') return { id, type, data: { column: data.name, label: data.name, type: data.type } };
+                        if (type === 'field') {
+                         return { 
+                             id, 
+                             type, 
+                             data: { 
+                                 column: data.name, 
+                                 label: data.name, 
+                                 type: data.type,
+                                 is_translatable: false,
+                                 related_column: 'name'
+                             } 
+                        };
+                    }
                         return null;
                     }
                 }));

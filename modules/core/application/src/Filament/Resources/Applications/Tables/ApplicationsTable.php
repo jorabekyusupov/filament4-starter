@@ -61,7 +61,7 @@ class ApplicationsTable
                             ->when($data['created_until'], fn($query, $date) => $query->whereDate('created_at', '<=', $date));
                     }),
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),
@@ -78,7 +78,7 @@ class ApplicationsTable
                         }),
                 ]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

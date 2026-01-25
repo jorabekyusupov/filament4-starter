@@ -12,21 +12,35 @@
             --border-color: #e2e8f0;
             --primary: #d97706; /* Filament Amber */
             --radius: 0.5rem;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --bg-sidebar: #ffffff;
+            --bg-item: #ffffff;
+            
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-body);
             height: 700px;
             display: flex;
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
+            color: var(--text-main);
         }
 
-        /* Dark mode overrides if needed, but 1:1 targets the index.html provided */
-        
+        /* DARK MODE */
+        :is(.dark .visual-builder-wrapper) {
+            --bg-body: #25293c; /* theme.css --dark-bg-color */
+            --border-color: #4b5563;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --bg-sidebar: #2f3349; /* theme.css --dark-card-bg-color */
+            --bg-item: #2f3349;
+        }
+
         /* --- SIDEBAR --- */
         .vb-sidebar {
             width: 280px;
-            background: white;
+            background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -41,7 +55,7 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #64748b;
+            color: var(--text-muted);
             font-weight: 700;
             margin-bottom: 5px;
         }
@@ -51,19 +65,19 @@
             align-items: center;
             gap: 10px;
             padding: 10px;
-            background: white;
+            background: var(--bg-item);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             cursor: grab;
             font-size: 13px;
             font-weight: 500;
-            color: #334155;
+            color: var(--text-main);
             transition: all 0.2s;
         }
         .vb-draggable-item:hover {
             border-color: var(--primary);
             color: var(--primary);
-            background: #fffbeb;
+            background: rgba(217, 119, 6, 0.1); 
         }
 
         /* --- CANVAS --- */
@@ -114,21 +128,21 @@
 
         /* FIELDSET */
         .f-fieldset {
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius);
             padding: 20px;
-            background: #fff;
+            background: var(--bg-item);
         }
         .f-fieldset legend {
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-main);
             padding: 0 8px;
             font-size: 14px;
         }
 
         /* SECTION */
         .f-section {
-            background: white;
+            background: var(--bg-item);
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
             padding: 24px;
@@ -136,23 +150,23 @@
         }
 
         /* INPUTS */
-        .f-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #334155; }
-        .f-input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; box-sizing: border-box;}
+        .f-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .f-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; box-sizing: border-box; background: transparent; color: var(--text-main);}
         .f-input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
 
         /* --- ADVANCED GRID SYSTEM --- */
         .f-grid-container {
-            border: 1px dashed #94a3b8;
+            border: 1px dashed var(--border-color);
             padding: 15px;
             border-radius: 8px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(125,125,125,0.05);
         }
 
         .grid-controls {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            background: #f1f5f9;
+            background: var(--bg-item);
             padding: 8px;
             border-radius: 6px;
             margin-bottom: 15px;
@@ -164,27 +178,27 @@
             align-items: center;
             gap: 4px;
             padding-right: 15px;
-            border-right: 1px solid #cbd5e1;
+            border-right: 1px solid var(--border-color);
         }
         .grid-group:last-child { border-right: none; }
 
         .grid-group-label {
             font-size: 10px;
             font-weight: bold;
-            color: #64748b;
+            color: var(--text-muted);
             writing-mode: vertical-lr;
             transform: rotate(180deg);
         }
 
         .grid-btn {
-            border: 1px solid #cbd5e1;
-            background: white;
+            border: 1px solid var(--border-color);
+            background: var(--bg-item);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
             transition: all 0.1s;
-            color: #475569;
+            color: var(--text-muted);
         }
         .grid-btn:hover { border-color: var(--primary); color: var(--primary); }
         .grid-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -196,21 +210,21 @@
         }
 
         .f-grid-col {
-            border: 1px dotted #94a3b8;
+            border: 1px dotted var(--border-color);
             border-radius: 5px;
             padding: 10px;
-            background: rgba(255,255,255,0.6);
+            background: rgba(125,125,125,0.05);
             min-height: 50px;
         }
 
         /* Drag Over Visuals */
-        .drag-over { background-color: #f0fdf4 !important; border: 2px dashed #22c55e !important; }
+        .drag-over { background-color: rgba(34, 197, 94, 0.1) !important; border: 2px dashed #22c55e !important; }
 
         /* TABS Custom (Extra) */
-        .f-tabs { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: white; }
-        .f-tabs-header { display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-        .f-tab-item { padding: 10px 15px; font-size: 13px; font-weight: 500; cursor: pointer; border-right: 1px solid #e2e8f0; color: #64748b; }
-        .f-tab-item.active { background: white; color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -1px; }
+        .f-tabs { border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-item); }
+        .f-tabs-header { display: flex; background: rgba(125,125,125,0.05); border-bottom: 1px solid var(--border-color); }
+        .f-tab-item { padding: 10px 15px; font-size: 13px; font-weight: 500; cursor: pointer; border-right: 1px solid var(--border-color); color: var(--text-muted); }
+        .f-tab-item.active { background: var(--bg-item); color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -1px; }
         .f-tab-item-add { padding: 10px; cursor: pointer; color: var(--primary); font-weight: bold; }
         .f-tab-content { padding: 15px; min-height: 50px; }
 
@@ -225,7 +239,7 @@
     >
         <!-- SIDEBAR -->
         <div class="vb-sidebar">
-            <h3 style="margin:0 0 20px 0; color:#0f172a; font-weight:bold; font-size:18px;">Form Builder</h3>
+            <h3 style="margin:0 0 20px 0; color:var(--text-main); font-weight:bold; font-size:18px;">Form Builder</h3>
 
             <div>
                 <div class="vb-section-title">Layouts</div>
@@ -245,13 +259,17 @@
 
             <div>
                 <div class="vb-section-title">Fields</div>
+                <div style="font-size: 10px; color: red; display: none;">DEBUG: {{ json_encode($columns) }}</div>
                 <template x-for="col in columns" :key="col.name">
                     <div class="vb-draggable-item" draggable="true" @dragstart="dragStart($event, 'field', col)">
                         <i class="fas fa-font"></i>
                         <span x-text="col.name"></span>
-                        <span style="margin-left:auto; font-size:10px; color:#999;" x-text="col.type"></span>
+                        <span style="margin-left:auto; font-size:10px; opacity:0.7;" x-text="col.type"></span>
                     </div>
                 </template>
+                <div x-show="!columns || columns.length === 0" style="font-size:12px; color:var(--text-muted); font-style:italic; padding:10px; text-align:center;">
+                    (No fields found. Select a table first)
+                </div>
             </div>
         </div>
 
@@ -265,14 +283,14 @@
                  @drop.prevent="handleDrop($event, state)"
             >
                 <!-- Placeholder -->
-                <div x-show="state.length === 0" style="text-align: center; color: #94a3b8; margin-top: 150px;">
+                <div x-show="state.length === 0" style="text-align: center; color: var(--text-muted); margin-top: 150px;">
                     <i class="fas fa-layer-group" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
                     <p>Formani yig'ish uchun elementlarni bu yerga tashlang</p>
                 </div>
 
                 <!-- Render Items -->
                 <template x-for="(item, index) in state" :key="index">
-                    <div class="comp-wrapper" x-data="{ item: item }">
+                    <div class="comp-wrapper" >
                          <!-- Delete Button -->
                         <div class="delete-btn" @click="state.splice(index, 1)"><i class="fas fa-times"></i></div>
 
@@ -304,7 +322,7 @@
                                                 <div class="comp-wrapper" style="margin-bottom:10px;">
                                                     <div class="delete-btn" @click="item.data.items[colIndex-1].splice(subIndex, 1)"><i class="fas fa-times"></i></div>
                                                     <!-- Simple Field Preview for Grid -->
-                                                    <div style="background:white; padding:8px; border:1px solid #e2e8f0; border-radius:4px;">
+                                                    <div style="background:var(--bg-item); padding:8px; border:1px solid var(--border-color); border-radius:4px;">
                                                         <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                         <input type="text" class="f-input" disabled placeholder="...">
                                                     </div>
@@ -319,8 +337,8 @@
                         <!-- SECTION -->
                         <template x-if="item.type === 'section'">
                             <div class="f-section">
-                                <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                                    <input x-model="item.data.label" style="border:none; width:100%; outline:none;" placeholder="Section Title">
+                                <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;">
+                                    <input x-model="item.data.label" style="border:none; width:100%; outline:none; background:transparent; color:var(--text-main);" placeholder="Section Title">
                                 </div>
                                 <div class="vb-drop-zone"
                                      style="min-height:40px;"
@@ -333,7 +351,7 @@
                                     <template x-for="(subItem, subIndex) in (item.data.schema || [])" :key="subIndex">
                                         <div class="comp-wrapper">
                                             <div class="delete-btn" @click="item.data.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
-                                            <div style="background:white; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                                            <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                 <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                 <input type="text" class="f-input" disabled>
                                             </div>
@@ -346,7 +364,7 @@
                         <!-- FIELDSET -->
                         <template x-if="item.type === 'fieldset'">
                             <fieldset class="f-fieldset">
-                                <legend><input x-model="item.data.label" style="border:none; outline:none; background:transparent;" placeholder="Legend"></legend>
+                                <legend><input x-model="item.data.label" style="border:none; outline:none; background:transparent; color:var(--text-main);" placeholder="Legend"></legend>
                                 <div class="vb-drop-zone"
                                      style="min-height:40px;"
                                      x-data="{ isOver: false }"
@@ -358,7 +376,7 @@
                                     <template x-for="(subItem, subIndex) in (item.data.schema || [])" :key="subIndex">
                                         <div class="comp-wrapper">
                                             <div class="delete-btn" @click="item.data.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
-                                            <div style="background:white; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                                            <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                 <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                 <input type="text" class="f-input" disabled>
                                             </div>
@@ -368,29 +386,29 @@
                             </fieldset>
                         </template>
 
-                         <!-- TABS -->
+                        <!-- TABS -->
                         <template x-if="item.type === 'tabs'">
                             <div class="f-tabs">
                                 <div class="f-tabs-header">
                                     <template x-for="(tab, tIndex) in item.data.tabs" :key="tIndex">
-                                        <div class="f-tab-item" @click.stop><input x-model="tab.label" style="border:none; background:transparent; width:80px;"> <span @click="item.data.tabs.splice(tIndex, 1)" style="color:red; cursor:pointer;">&times;</span></div>
+                                        <div class="f-tab-item" @click.stop><input x-model="tab.label" style="border:none; background:transparent; width:80px; color:var(--text-main);"> <span @click="item.data.tabs.splice(tIndex, 1)" style="color:red; cursor:pointer;">&times;</span></div>
                                     </template>
                                     <div class="f-tab-item-add" @click="item.data.tabs.push({label:'New Tab', schema:[]})">+</div>
                                 </div>
                                 <div class="f-tab-content">
                                     <template x-for="(tab, tIndex) in item.data.tabs">
-                                        <div class="vb-drop-zone" style="min-height:50px; border:1px dashed #eee;"
+                                        <div class="vb-drop-zone" style="min-height:50px; border:1px dashed var(--border-color);"
                                              x-data="{ isOver: false }"
                                              :class="{ 'drag-over': isOver }"
                                              @dragover.prevent.stop="isOver = true"
                                              @dragleave.prevent.stop="isOver = false"
                                              @drop.prevent.stop="isOver = false; handleDrop($event, tab)"
                                         >
-                                             <div x-show="!tab.schema || tab.schema.length === 0" style="color:#ccc; font-size:11px;">Tab Content</div>
+                                             <div x-show="!tab.schema || tab.schema.length === 0" style="color:var(--text-muted); font-size:11px;">Tab Content</div>
                                              <template x-for="(subItem, subIndex) in (tab.schema || [])" :key="subIndex">
                                                  <div class="comp-wrapper">
                                                     <div class="delete-btn" @click="tab.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
-                                                    <div style="background:white; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                                                    <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                         <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                         <input type="text" class="f-input" disabled>
                                                     </div>
@@ -404,7 +422,7 @@
 
                         <!-- FIELD -->
                         <template x-if="item.type === 'field'">
-                             <div style="background:white; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                             <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                 <label class="f-label" x-text="item.data.label || item.data.column"></label>
                                 <template x-if="item.data.type === 'foreignId'">
                                     <select class="f-input" disabled><option>Select Relation...</option></select>
@@ -413,8 +431,8 @@
                                     <input type="text" class="f-input" disabled>
                                 </template>
                                 
-                                <div x-show="item.data.type !== 'foreignId'" style="margin-top:8px; font-size:11px; border-top:1px solid #f1f5f9; padding-top:4px;">
-                                    <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer; color:#64748b;">
+                                <div x-show="item.data.type !== 'foreignId'" style="margin-top:8px; font-size:11px; border-top:1px solid var(--border-color); padding-top:4px;">
+                                    <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer; color:var(--text-muted);">
                                         <input type="checkbox" x-model="item.data.is_translatable"> 
                                         <span>Translatable (getNameInputsFilament)</span>
                                     </label>
@@ -429,69 +447,76 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('visualFormBuilder', ({ state, columns }) => ({
-                state: state,
-                columns: columns,
-                draggedType: null,
-                draggedData: null,
-                draggingOverRoot: false,
-
-                init() {
-                    if (!this.state || typeof this.state !== 'object') {
-                         this.state = [];
-                    }
-                    // Watch for external column updates if key doesn't work (key should work though)
-                },
-
-                dragStart(e, type, data = null) {
-                    this.draggedType = type;
-                    this.draggedData = data;
-                    e.dataTransfer.effectAllowed = 'copy';
-                    e.dataTransfer.dropEffect = 'copy';
-                },
-
-                handleDrop(e, container, key = null) {
-                    // Remove drag-over class
-                    e.target.closest('.vb-drop-zone')?.classList.remove('drag-over');
-                    this.draggingOverRoot = false;
-
-                    if (!this.draggedType) return;
-
-                    let targetArray = null;
-
-                    if (Array.isArray(container)) {
-                        targetArray = container;
-                    } else if (container.schema && Array.isArray(container.schema)) {
-                        targetArray = container.schema;
-                    } else if (container.items && key !== null) {
-                        // Grid column
-                        if (!container.items[key]) container.items[key] = [];
-                        targetArray = container.items[key];
-                    }
-
-                    if (targetArray) {
-                        // Create item and push
-                        const item = this.createItem(this.draggedType, this.draggedData);
-                        if (item) {
-                            targetArray.push(item);
-                        }
-                    }
-                    
-                    this.draggedType = null;
-                    this.draggedData = null;
-                },
-
-                createItem(type, data) {
-                    const id = Math.random().toString(36).substr(2, 9);
-                    if (type === 'grid') return { id, type, data: { columns: 2, items: {} } };
-                    if (type === 'section') return { id, type, data: { label: 'Section Title', schema: [] } };
-                    if (type === 'fieldset') return { id, type, data: { label: 'New Group', schema: [] } };
-                    if (type === 'tabs') return { id, type, data: { tabs: [{label: 'Tab 1', schema: []}] } };
-                    if (type === 'field') return { id, type, data: { column: data.name, label: data.name, type: data.type } };
-                    return null;
+        (function() {
+            function registerConfig() {
+                if (typeof Alpine === 'undefined') {
+                    document.addEventListener('alpine:init', registerConfig);
+                    return;
                 }
-            }));
-        });
+
+                if (Alpine.data['visualFormBuilder']) return;
+
+                Alpine.data('visualFormBuilder', ({ state, columns }) => ({
+                    state: state,
+                    columns: columns,
+                    draggedType: null,
+                    draggedData: null,
+                    draggingOverRoot: false,
+
+                    init() {
+                         if (!this.state || typeof this.state !== 'object') {
+                             this.state = [];
+                         }
+                    },
+
+                    dragStart(e, type, data = null) {
+                        this.draggedType = type;
+                        this.draggedData = data;
+                        e.dataTransfer.effectAllowed = 'copy';
+                        e.dataTransfer.dropEffect = 'copy';
+                    },
+
+                    handleDrop(e, container, key = null) {
+                        e.target.closest('.vb-drop-zone')?.classList.remove('drag-over');
+                        this.draggingOverRoot = false;
+
+                        if (!this.draggedType) return;
+
+                        let targetArray = null;
+
+                        if (Array.isArray(container)) {
+                            targetArray = container;
+                        } else if (container.schema && Array.isArray(container.schema)) {
+                            targetArray = container.schema;
+                        } else if (container.items && key !== null) {
+                            if (!container.items[key]) container.items[key] = [];
+                            targetArray = container.items[key];
+                        }
+
+                        if (targetArray) {
+                            const item = this.createItem(this.draggedType, this.draggedData);
+                            if (item) {
+                                targetArray.push(item);
+                            }
+                        }
+                        
+                        this.draggedType = null;
+                        this.draggedData = null;
+                    },
+
+                    createItem(type, data) {
+                        const id = Math.random().toString(36).substr(2, 9);
+                        if (type === 'grid') return { id, type, data: { columns: 2, items: {} } };
+                        if (type === 'section') return { id, type, data: { label: 'Section Title', schema: [] } };
+                        if (type === 'fieldset') return { id, type, data: { label: 'New Group', schema: [] } };
+                        if (type === 'tabs') return { id, type, data: { tabs: [{label: 'Tab 1', schema: []}] } };
+                        if (type === 'field') return { id, type, data: { column: data.name, label: data.name, type: data.type } };
+                        return null;
+                    }
+                }));
+            }
+
+            registerConfig();
+        })();
     </script>
 </x-dynamic-component>

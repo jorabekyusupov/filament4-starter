@@ -57,8 +57,8 @@ class ModuleMakerResource extends Resource
         return $schema
             ->schema([
 
-             Wizard::make([
-                   Wizard\Step::make(__('Module Details'))
+                Wizard::make([
+                    Wizard\Step::make(__('Module Details'))
                         ->description(__('Basic information about the module'))
                         ->icon('heroicon-o-information-circle')
                         ->schema([
@@ -96,11 +96,11 @@ class ModuleMakerResource extends Resource
                                 ]),
                         ]),
 
-               Wizard\Step::make(__('Database Structure'))
+                    Wizard\Step::make(__('Database Structure'))
                         ->description(__('Define tables and columns'))
                         ->icon('heroicon-o-table-cells')
                         ->schema([
-    
+
                             Repeater::make('tables')
                                 ->label(__('Tables'))
                                 ->schema([
@@ -113,7 +113,7 @@ class ModuleMakerResource extends Resource
                                                 ->helperText(__('The name of the table, e.g. "posts"'))
                                                 ->columnSpan(2)
                                                 ->live(onBlur: true),
-                                            
+
                                             Toggle::make('has_resource')
                                                 ->label(__('Generate Resource'))
                                                 ->default(false)
@@ -122,7 +122,7 @@ class ModuleMakerResource extends Resource
                                                 ->helperText(__('Create a Filament Resource for this table'))
                                                 ->columnSpan(1)
                                                 ->live(),
-                                                
+
                                             Fieldset::make(__('Options'))
                                                 ->schema([
                                                     Toggle::make('soft_deletes')
@@ -162,15 +162,15 @@ class ModuleMakerResource extends Resource
                                                         ->required()
                                                         ->searchable()
                                                         ->options($service->getAvailableModels())
-                                                        ->visible(fn (Get $get) => $get('type') === 'foreignId'),
+                                                        ->visible(fn(Get $get) => $get('type') === 'foreignId'),
                                                     TextInput::make('related_column')
                                                         ->label(__('Related Column'))
                                                         ->placeholder('name')
                                                         ->default('name')
                                                         ->helperText(__('Column to display in select (default: name)'))
                                                         ->required()
-                                                        ->visible(fn (Get $get) => $get('type') === 'foreignId'),
-                                                    
+                                                        ->visible(fn(Get $get) => $get('type') === 'foreignId'),
+
                                                     Grid::make(3)
                                                         ->schema([
                                                             \Filament\Forms\Components\Toggle::make('nullable')
@@ -190,8 +190,8 @@ class ModuleMakerResource extends Resource
                                         ->columnSpanFull()
                                         ->live(),
                                 ])
-                                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                                ->collapsed(fn ($state) => count($state) > 1)
+                                ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
+                                ->collapsed(fn($state) => count($state) > 1)
                                 ->defaultItems(0)
                                 ->addActionLabel(__('Add Table'))
                                 ->reorderable(false)
@@ -234,12 +234,21 @@ class ModuleMakerResource extends Resource
                                         ->viewData(function (Get $get) {
                                             $tableName = $get('table_name');
                                             // Try multiple paths to ensure we find the tables repeater state
-                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? $get('../../../../tables') ?? [];
                                             
+                                            \Illuminate\Support\Facades\Log::info('VisualBuilder Debug', [
+                                                'tableName' => $tableName,
+                                                'tables_count' => count($tables),
+                                                'tables_keys' => array_keys($tables),
+                                                'first_table_dump' => !empty($tables) ? array_values($tables)[0] : 'empty',
+                                            ]);
+
                                             $columns = [];
-                                            if ($tableName) {
+                                            if ($tableName && !empty($tables)) {
                                                 $tableData = collect($tables)->firstWhere('name', $tableName);
-                                                $columns = $tableData['columns'] ?? [];
+                                                if ($tableData) {
+                                                    $columns = $tableData['columns'] ?? [];
+                                                }
                                             }
 
                                             return [
@@ -248,8 +257,8 @@ class ModuleMakerResource extends Resource
                                         })
                                         ->key(function (Get $get) {
                                             $tableName = $get('table_name');
-                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
-                                            
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? $get('../../../../tables') ?? [];
+
                                             // Ensure tables is array
                                             if (!is_array($tables)) {
                                                 return 'vb-' . $tableName;
@@ -257,7 +266,7 @@ class ModuleMakerResource extends Resource
 
                                             $tableData = collect($tables)->firstWhere('name', $tableName);
                                             $columns = $tableData['columns'] ?? [];
-                                            
+
                                             // Use robust checksum: table name + count + names
                                             $colSignature = count($columns) . '-' . implode(',', array_column($columns, 'name'));
                                             return 'vb-' . $tableName . '-' . md5($colSignature);
@@ -268,8 +277,8 @@ class ModuleMakerResource extends Resource
                                 ->columnSpanFull(),
                         ]),
                 ])
-                ->columnSpanFull()
-                ->skippable()
+                    ->columnSpanFull()
+                    ->skippable()
             ]);
     }
 

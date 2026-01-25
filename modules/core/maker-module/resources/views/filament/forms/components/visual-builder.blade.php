@@ -530,10 +530,42 @@
                         <template x-if="item.type === 'field'">
                              <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                 <label class="f-label" x-text="item.data.label || item.data.column"></label>
+                                
+                                <!-- Foreign ID (Select) -->
                                 <template x-if="item.data.type === 'foreignId'">
                                     <select class="f-input" disabled><option>Select Relation...</option></select>
                                 </template>
-                                <template x-if="item.data.type !== 'foreignId'">
+
+                                <!-- Boolean (Toggle) -->
+                                <template x-if="item.data.type === 'boolean'">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+                                        <div style="width:36px; height:20px; background:var(--primary); border-radius:20px; position:relative; opacity:0.5;">
+                                            <div style="width:16px; height:16px; background:white; border-radius:50%; position:absolute; top:2px; right:2px;"></div>
+                                        </div>
+                                        <span style="font-size:12px; color:var(--text-muted);">Toggle</span>
+                                    </div>
+                                </template>
+
+                                <!-- Textarea (text, longText, json) -->
+                                <template x-if="['text', 'mediumText', 'longText', 'json', 'jsonb'].includes(item.data.type)">
+                                    <textarea class="f-input" disabled style="height:60px; resize:none;"></textarea>
+                                </template>
+
+                                <!-- Date/Time -->
+                                <template x-if="['date', 'datetime', 'timestamp'].includes(item.data.type)">
+                                    <div style="position:relative;">
+                                        <input type="text" class="f-input" disabled placeholder="YYYY-MM-DD">
+                                        <i class="fas fa-calendar" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px;"></i>
+                                    </div>
+                                </template>
+
+                                <!-- Numeric -->
+                                <template x-if="['integer', 'tinyInteger', 'smallInteger', 'mediumInteger', 'bigInteger', 'unsignedInteger', 'unsignedBigInteger', 'decimal', 'float', 'double'].includes(item.data.type)">
+                                     <input type="number" class="f-input" disabled placeholder="0">
+                                </template>
+
+                                <!-- Default Text Input -->
+                                <template x-if="!['foreignId', 'boolean', 'text', 'mediumText', 'longText', 'json', 'jsonb', 'date', 'datetime', 'timestamp', 'integer', 'tinyInteger', 'smallInteger', 'mediumInteger', 'bigInteger', 'unsignedInteger', 'unsignedBigInteger', 'decimal', 'float', 'double'].includes(item.data.type)">
                                     <input type="text" class="f-input" disabled>
                                 </template>
                                 

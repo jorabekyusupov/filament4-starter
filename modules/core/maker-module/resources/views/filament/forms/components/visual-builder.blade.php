@@ -19,7 +19,7 @@
             
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-body);
-            height: 700px;
+            height: 850px;
             display: flex;
             overflow: hidden;
             border: 1px solid var(--border-color);
@@ -39,7 +39,7 @@
 
         /* --- SIDEBAR --- */
         .vb-sidebar {
-            width: 280px;
+            width: 300px; /* Slightly wider sidebar */
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -93,8 +93,8 @@
         }
 
         #vb-root-drop-zone {
-            max-width: 1000px;
-            margin: 0 auto;
+            max-width: 100%;
+
             min-height: 600px;
             padding-bottom: 150px;
         }

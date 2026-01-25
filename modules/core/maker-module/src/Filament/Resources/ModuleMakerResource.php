@@ -198,6 +198,72 @@ class ModuleMakerResource extends Resource
                                 ->live(), // Important for next step to see changes
                         ]),
 
+                    Wizard\Step::make(__('Table Layouts'))
+                        ->description(__('Configure table columns and actions'))
+                        ->icon('heroicon-o-table-cells')
+                        ->schema([
+                            Repeater::make('table_layouts')
+                                ->label(__('Table Layouts'))
+                                ->schema([
+                                    Select::make('table_name')
+                                        ->label(__('Table'))
+                                        ->options(function (Get $get) {
+                                            $tables = $get('../../tables') ?? [];
+                                            return collect($tables)
+                                                ->where('has_resource', true)
+                                                ->filter(fn($table) => !empty($table['name']))
+                                                ->pluck('name', 'name')
+                                                ->toArray();
+                                        })
+                                        ->required()
+                                        ->live(),
+
+                                    \Filament\Forms\Components\ViewField::make('schema')
+                                        ->label(function (Get $get) {
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? [];
+                                            $tableName = $get('table_name');
+                                            $cols = 0;
+                                            if ($tableName) {
+                                                $data = collect($tables)->firstWhere('name', $tableName);
+                                                $cols = count($data['columns'] ?? []);
+                                            }
+                                            return __('table_builder') . " ({$cols} fields available)";
+                                        })
+                                        ->hiddenLabel(false)
+                                        ->view('maker-module::filament.forms.components.table-builder')
+                                        ->viewData(function (Get $get) {
+                                            $tableName = $get('table_name');
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? $get('../../../../tables') ?? [];
+                                            
+                                            $columns = [];
+                                            if ($tableName && !empty($tables)) {
+                                                $tableData = collect($tables)->firstWhere('name', $tableName);
+                                                if ($tableData) {
+                                                    $columns = $tableData['columns'] ?? [];
+                                                }
+                                            }
+
+                                            return [
+                                                'columns' => array_values($columns),
+                                            ];
+                                        })
+                                        ->key(function (Get $get) {
+                                            $tableName = $get('table_name');
+                                            $tables = $get('../../tables') ?? $get('../../../tables') ?? $get('../../../../tables') ?? [];
+                                            
+                                            if (!is_array($tables)) return 'tb-' . $tableName;
+
+                                            $tableData = collect($tables)->firstWhere('name', $tableName);
+                                            $columns = $tableData['columns'] ?? [];
+                                            $colSignature = count($columns) . '-' . implode(',', array_column($columns, 'name'));
+                                            return 'tb-' . $tableName . '-' . md5($colSignature);
+                                        })
+                                        ->columnSpanFull(),
+                                ])
+                                ->addActionLabel(__('Add Table Layout'))
+                                ->columnSpanFull(),
+                        ]),
+
                     Wizard\Step::make(__('Resource Layouts'))
                         ->description(__('Drag and drop to configure form layout'))
                         ->icon('heroicon-o-squares-plus')

@@ -1,15 +1,14 @@
 <?php
 
-namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources;
+namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource;
 
 use Filament\Schemas\Schema;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Schemas\StubForm;
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Tables\StubTable;
 use StubModuleNamespace\StubSubModulePrefix\Models\StubTableName;
 
 class StubTableNameResource extends Resource
@@ -26,30 +25,12 @@ class StubTableNameResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                // Add your form fields here
-            ]);
+        return StubForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                // Add your table columns here
-            ])
-            ->filters([
-                // Add your table filters here
-            ])
-            ->actions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make()
-                ]),
-            ])
-            ->bulkActions([
-                // Add your bulk actions here
-            ]);
+        return StubTable::table($table);
     }
 
     public static function getRelations(): array

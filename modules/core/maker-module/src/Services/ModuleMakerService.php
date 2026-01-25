@@ -197,13 +197,19 @@ class ModuleMakerService
         // Create the main Resource file
         $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData);
 
+        // Create Schemas/Form file
+        $this->createFormFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData);
+
+        // Create Tables/Table file
+        $this->createTableFile($commandName, $moduleName, $resourceName, $modelName, $columns, $tableLayoutData);
+
         // Create Resource Pages
         $this->createResourcePages($commandName, $moduleName, $resourceName, $modelName);
     }
 
     public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData = [])
     {
-        $resourceFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource.php");
+        $resourceFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/{$resourceName}Resource.php");
         $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/StubTableNameResource.php'));
 
         // Ensure Resources directory exists
@@ -217,24 +223,88 @@ class ModuleMakerService
                 'StubModuleNamespace',
                 'StubSubModulePrefix',
                 'StubTableName',
-                'StubTableNames'
+                'StubTableNames',
+                'StubForm',
+                'StubTable'
             ],
             [
                 'Modules',
                 $resourceName,
                 $modelName,
-                Str::plural($resourceName)
+                Str::plural($resourceName),
+                $modelName . 'Form',
+                $modelName . 'Table'
+            ],
+            $stub
+        );
+        
+        // No need to inject schema here anymore, as it delegates to Form and Table classes.
+        
+        file_put_contents($resourceFile, $resourceFileContent);
+    }
+
+    public function createFormFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData)
+    {
+        $formFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/Schemas/{$modelName}Form.php");
+        $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/Schemas/StubForm.php'));
+
+        $dir = dirname($formFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $content = str_replace(
+            [
+                'StubModuleNamespace',
+                'StubSubModulePrefix',
+                'StubTableName',
+                'StubForm'
+            ],
+            [
+                'Modules',
+                $resourceName,
+                $modelName,
+                $modelName . 'Form'
             ],
             $stub
         );
 
-        $formSchema = $this->generateFormSchema($columns, $formLayoutData);
-        $resourceFileContent = str_replace('// Add your form fields here', $formSchema, $resourceFileContent);
+        $formSchema = $this->generateFormSchema($columns, $layoutData);
+        $content = str_replace('// Add your form fields here', $formSchema, $content);
 
-        $tableSchema = $this->generateTableSchema($columns, $tableLayoutData);
-        $resourceFileContent = str_replace('// Add your table columns here', $tableSchema, $resourceFileContent);
+        file_put_contents($formFile, $content);
+    }
 
-        file_put_contents($resourceFile, $resourceFileContent);
+    public function createTableFile($commandName, $moduleName, $resourceName, $modelName, $columns, $layoutData)
+    {
+        $tableFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/Tables/{$modelName}Table.php");
+        $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/Tables/StubTable.php'));
+
+        $dir = dirname($tableFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $content = str_replace(
+            [
+                'StubModuleNamespace',
+                'StubSubModulePrefix',
+                'StubTableName',
+                'StubTable'
+            ],
+            [
+                'Modules',
+                $resourceName,
+                $modelName,
+                $modelName . 'Table'
+            ],
+            $stub
+        );
+
+        $tableSchema = $this->generateTableSchema($columns, $layoutData);
+        $content = str_replace('// Add your table columns here', $tableSchema, $content);
+
+        file_put_contents($tableFile, $content);
     }
 
     public function createResourcePages($commandName, $moduleName, $resourceName, $modelName)
@@ -751,7 +821,7 @@ class ModuleMakerService
              $relatedColumn = $col['related_column'] ?? 'name';
 
              if ($isTranslatable) {
-                 if ($col['dbType'] === 'foreignId' || str_ends_with($name, '_id')) {
+                 if (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
                      // Translatable Relationship
                      $relationName = Str::camel(str_replace('_id', '', $name));
                      $nameField = "'{$relationName}.{$relatedColumn}.' . app()->getLocale()";
@@ -759,7 +829,7 @@ class ModuleMakerService
                      // Translatable Column
                      $nameField = "'{$name}.' . app()->getLocale()";
                  }
-             } elseif ($col['dbType'] === 'foreignId' || str_ends_with($name, '_id')) {
+             } elseif (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
                  // Standard Relationship
                  $relationName = Str::camel(str_replace('_id', '', $name));
                  $nameField = "'{$relationName}.{$relatedColumn}'";

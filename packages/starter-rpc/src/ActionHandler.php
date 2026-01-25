@@ -45,9 +45,7 @@ class ActionHandler
         }
 
         $actionClass = $this->actions[$methodName];
-        $actionInstance = new $actionClass($this->client);
-
-        return $actionInstance->handle($payload);
+        return new $actionClass($this->client)->handle($payload);
     }
 
 }

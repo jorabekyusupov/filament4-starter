@@ -73,7 +73,7 @@ class ApplicationForm
                                 Action::make('generate_password')
                                     ->icon('heroicon-o-key')
                                     ->action(function ($set) {
-                                        $set('password', \Illuminate\Support\Str::password(16));
+                                        $set('password', \Illuminate\Support\Str::random(16));
                                     })
                             ),
 

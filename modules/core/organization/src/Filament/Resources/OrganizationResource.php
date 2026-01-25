@@ -279,16 +279,13 @@ class OrganizationResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['slug', 'structure.name'];
+        return ['slug'];
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         $details = [];
 
-        if ($record->structure) {
-            $details['Structure'] = $record->structure->name;
-        }
 
         return $details;
     }

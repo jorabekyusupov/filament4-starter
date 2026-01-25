@@ -257,7 +257,9 @@
                                 <input type="checkbox" x-model="item.sortable" title="Sortable"> <span style="font-size:10px; color:var(--text-muted)">Sort</span>
                                 <input type="checkbox" x-model="item.searchable" title="Searchable"> <span style="font-size:10px; color:var(--text-muted)">Search</span>
                             </div>
-                            <div class="delete-btn" @click="state.columns.splice(index, 1)"><i class="fas fa-times"></i></div>
+                            <div class="delete-btn" @click="state.columns.splice(index, 1)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -277,13 +279,28 @@
                         Drop filters here
                     </div>
                      <template x-for="(item, index) in state.filters" :key="index">
-                        <div class="tb-comp-wrapper">
-                             <div class="item-icon"><i :class="item.icon || 'fas fa-filter'"></i></div>
-                            <div>
-                                <div class="item-label" x-text="item.label || item.name"></div>
-                                <div class="item-type" x-text="item.type"></div>
-                            </div>
-                             <div class="delete-btn" @click="state.filters.splice(index, 1)"><i class="fas fa-times"></i></div>
+                        <div class="tb-comp-wrapper" style="flex-wrap: wrap;">
+                             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                                 <div class="item-icon"><i :class="item.icon || 'fas fa-filter'"></i></div>
+                                <div>
+                                    <div class="item-label" x-text="item.label || item.name"></div>
+                                    <div class="item-type" x-text="item.type"></div>
+                                </div>
+                                <div class="delete-btn" @click="state.filters.splice(index, 1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                </div>
+                             </div>
+                             
+                             <!-- Filter Configuration -->
+                             <div style="width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+                                 <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Target Column</label>
+                                 <select x-model="item.column" style="width: 100%; font-size: 12px; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-body); color: var(--text-main);">
+                                     <option value="">Select Column...</option>
+                                     <template x-for="col in columns" :key="col.name">
+                                         <option :value="col.name" x-text="col.name"></option>
+                                     </template>
+                                 </select>
+                             </div>
                         </div>
                     </template>
                 </div>
@@ -308,7 +325,9 @@
                             <div>
                                 <div class="item-label" x-text="item.type"></div>
                             </div>
-                             <div class="delete-btn" @click="state.actions.splice(index, 1)"><i class="fas fa-times"></i></div>
+                             <div class="delete-btn" @click="state.actions.splice(index, 1)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </div>
                         </div>
                     </template>
                 </div>

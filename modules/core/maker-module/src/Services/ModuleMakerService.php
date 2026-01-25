@@ -304,6 +304,30 @@ class ModuleMakerService
         $tableSchema = $this->generateTableSchema($columns, $layoutData);
         $content = str_replace('// Add your table columns here', $tableSchema, $content);
 
+        // Generate Filters
+        $filtersSchema = $this->generateTableFilters($layoutData);
+        $content = str_replace('// Add your table filters here', $filtersSchema, $content);
+
+        // Generate Actions
+        $actionsSchema = $this->generateTableActions($layoutData);
+        if (!empty($actionsSchema)) {
+            // Replace default actions block
+            $content = preg_replace(
+                '/->actions\(\[\s*ActionGroup::make\(\[\s*EditAction::make\(\),\s*DeleteAction::make\(\),\s*\]\),\s*\]\)/s',
+                "->actions([\n                " . $actionsSchema . "\n            ])",
+                $content
+            );
+        }
+
+        // Generate Header Actions
+        $headerActionsSchema = $this->generateTableHeaderActions($layoutData);
+        if (!empty($headerActionsSchema)) {
+             // Add header actions if any (default stub doesn't have them usually, but we can append or inject if placeholder existed. 
+             // Since stub doesn't have it, we might need to inject it before ->columns or at end of table method.
+             // But wait, StubTable.php doesn't have headerActions placeholder. Let's assume user wants standard actions.
+             // For now, let's focus on Row Actions as requested by user "Table layout da Column filter action lar".
+        }
+
         file_put_contents($tableFile, $content);
     }
 
@@ -903,6 +927,69 @@ class ModuleMakerService
              $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label('{$label}'){$isSortable}{$isSearchable}";
              
              $components[] = $cmp;
+        }
+
+        return implode(",\n                ", $components);
+    }
+    private function generateTableFilters(array $builderBlocks): string
+    {
+        if (empty($builderBlocks['filters'] ?? [])) {
+            return "";
+        }
+
+        $components = [];
+
+        foreach ($builderBlocks['filters'] as $filter) {
+            $type = $filter['type'] ?? 'Filter';
+            $column = $filter['column'] ?? 'id'; // Default to ID if not selected
+            $label = $filter['label'] ?? Str::headline($column);
+
+            switch ($type) {
+                case 'SelectFilter':
+                    $components[] = "\Filament\Tables\Filters\SelectFilter::make('{$column}')";
+                    break;
+                case 'TernaryFilter':
+                    $components[] = "\Filament\Tables\Filters\TernaryFilter::make('{$column}')";
+                    break;
+                case 'Filter':
+                default:
+                    $components[] = "\Filament\Tables\Filters\Filter::make('{$column}')";
+                    break;
+            }
+        }
+
+        return implode(",\n                ", $components);
+    }
+
+    private function generateTableActions(array $builderBlocks): string
+    {
+        if (empty($builderBlocks['actions'] ?? [])) {
+            // If empty, return default or empty? Stub has defaults. 
+            // If user cleared them, we should probably return empty to respect "delete action" feature.
+            return ""; 
+        }
+
+        $components = [];
+
+        foreach ($builderBlocks['actions'] as $action) {
+            $type = $action['type'] ?? 'EditAction';
+            $components[] = "\Filament\Tables\Actions\\{$type}::make()";
+        }
+
+        return implode(",\n                ", $components);
+    }
+
+    private function generateTableHeaderActions(array $builderBlocks): string
+    {
+        if (empty($builderBlocks['header_actions'] ?? [])) {
+            return "";
+        }
+
+        $components = [];
+
+        foreach ($builderBlocks['header_actions'] as $action) {
+            $type = $action['type'] ?? 'CreateAction';
+            $components[] = "\Filament\Tables\Actions\\{$type}::make()";
         }
 
         return implode(",\n                ", $components);

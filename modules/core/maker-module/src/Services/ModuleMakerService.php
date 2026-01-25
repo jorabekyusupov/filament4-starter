@@ -70,7 +70,8 @@ class ModuleMakerService
                 $columnsForMigration = $columnsAssociative; // Pass full data to support modifiers
 
                 $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
-                $this->createModelFile($commandName, $data['name'], $tableName, $columnsAssociative, $softDeletes);
+                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
+                $this->createModelFile($commandName, $data['name'], $tableName, $columnsAssociative, $softDeletes, $table);
 
                 // Add Filament Resource creation if has_resource is true
                 if ($table['has_resource'] ?? false) {
@@ -475,10 +476,11 @@ class ModuleMakerService
         file_put_contents($migrationFile, $migrationFileContent);
     }
 
-    public function createModelFile($commandName, $moduleName, $tableName, $columns, $softDeletes = false)
+    public function createModelFile($commandName, $moduleName, $tableName, $columns, $softDeletes = false, $tableData = [])
     {
         $modelName = Str::studly(Str::singular($tableName));
         $policyClass = $modelName . 'Policy';
+        $type = $tableData['type'] ?? 'standard'; // standard, pivot
 
         $modelFile = base_path("modules/{$commandName}/src/Models/{$modelName}.php");
         $stub = file_get_contents(base_path('packages/modular/stubs/model.php'));
@@ -505,6 +507,27 @@ class ModuleMakerService
                 "use Illuminate\Database\Eloquent\Model;\nuse Illuminate\Database\Eloquent\SoftDeletes;",
                 $modelFileContent
             );
+        }
+        
+        // Pivot Support
+        if ($type === 'pivot') {
+            $modelFileContent = str_replace(
+                'extends Model',
+                'extends \Illuminate\Database\Eloquent\Relations\Pivot',
+                $modelFileContent
+            );
+            // Pivot tables usually don't have auto-increment ID unless specified.
+            // If the user included an 'id' column in the builder, we keep it. 
+            // If they removed it (for pure pivot), we should set incrementing = false?
+            // Let's check columns for 'id'.
+            $hasId = collect($columns)->contains('id') || isset($columns['id']);
+            if (!$hasId) {
+                $modelFileContent = str_replace(
+                    'use SoftDeletes;', 
+                    "use SoftDeletes;\n    public \$incrementing = false;", 
+                    $modelFileContent
+                );
+            }
         }
 
         // Generate Casts

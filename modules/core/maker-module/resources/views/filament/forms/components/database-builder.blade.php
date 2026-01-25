@@ -109,6 +109,9 @@
             align-items: center;
             cursor: grab;
         }
+        .db-node[data-type="pivot"] .db-node-header {
+            border-bottom-color: #a855f7; /* Purple for Pivot */
+        }
         .db-node-title {
             font-weight: bold;
             font-size: 14px;
@@ -225,6 +228,7 @@
                 <div class="db-node"
                      :style="'left:' + (table.ui_x || 100) + 'px; top:' + (table.ui_y || 100) + 'px; pointer-events:auto;'"
                      :id="'node-' + tIndex"
+                     :data-type="table.type || 'standard'"
                 >
                     <!-- Header -->
                     <div class="db-node-header" @mousedown.stop="nodeMouseDown($event, tIndex)">
@@ -235,12 +239,18 @@
                         </div>
                     </div>
 
-                    <!-- Options Panel (Toggleable) -->
-                    <div x-show="table.showSettings" style="padding:10px; background:#252525; border-bottom:1px solid #444; font-size:11px;">
-                         <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.has_resource"> Generate Resource</label>
+                     <div x-show="table.showSettings" style="padding:10px; background:#252525; border-bottom:1px solid #444; font-size:11px;">
+                         <div style="margin-bottom:8px;">
+                             <label style="display:block; color:#aaa; margin-bottom:2px;">Table Type</label>
+                             <select x-model="table.type" class="db-input-dark" style="background:#333; border:1px solid #555; padding:4px; border-radius:4px; width:100%;" @change="if(table.type === 'pivot') { table.has_resource = false; table.soft_deletes = false; }">
+                                 <option value="standard">Standard Model</option>
+                                 <option value="pivot">Pivot Table</option>
+                             </select>
+                         </div>
+                         <label style="display:block; margin-bottom:5px;" x-show="table.type !== 'pivot'"><input type="checkbox" x-model="table.has_resource"> Generate Resource</label>
                          <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.soft_deletes"> Soft Deletes</label>
                          <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.logged"> Loggable (User Tracking)</label>
-                    </div>
+                     </div>
 
                     <!-- Columns -->
                     <div class="db-node-body">
@@ -408,6 +418,7 @@
                     addTable() {
                         this.state.push({
                             name: 'new_table_' + (this.state.length + 1),
+                            type: 'standard',
                             has_resource: true,
                             soft_deletes: false,
                             logged: false,

@@ -4,7 +4,7 @@
 namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource;
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\StubTableNameResource;
 
 class CreateStubTableName extends CreateRecord
 {

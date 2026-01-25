@@ -54,9 +54,9 @@ class ModuleMakerService
                     $columns,
                     $softDeletes ? [['name' => 'deleted_at', 'type' => 'softDeletes']] : [],
                     $logged ? array_merge(
-                        [['name' => 'created_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true], 
-                         ['name' => 'updated_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true]],
-                        $softDeletes ? [['name' => 'deleted_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true]] : []
+                        [['name' => 'created_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true], 
+                         ['name' => 'updated_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true]],
+                        $softDeletes ? [['name' => 'deleted_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true]] : []
                     ) : [],
                     $status ? [['name' => 'status', 'type' => 'boolean']] : []
                 );
@@ -345,8 +345,8 @@ class ModuleMakerService
         if (!empty($actionsSchema)) {
             // Replace default actions block
             $content = preg_replace(
-                '/->actions\(\[\s*ActionGroup::make\(\[\s*EditAction::make\(\),\s*DeleteAction::make\(\),\s*\]\),\s*\]\)/s',
-                "->actions([\n                " . $actionsSchema . "\n            ])",
+                '/->recordActions\(\[\s*EditAction::make\(\),\s*DeleteAction::make\(\),\s*\]\)/s',
+                "->recordActions([\n                " . $actionsSchema . "\n            ])",
                 $content
             );
         }
@@ -374,6 +374,7 @@ class ModuleMakerService
 
         foreach ($pages as $pageType => $stubFile) {
             $pageName = $pageType . $resourceName;
+            
             $pageFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/Pages/{$pageName}.php");
             $stub = file_get_contents(base_path("packages/modular/stubs/Filament/Resources/Pages/{$stubFile}"));
 
@@ -532,7 +533,7 @@ class ModuleMakerService
 
         // Generate Casts
         $castsContent = collect($columns)
-            ->filter(fn($data) => in_array(is_array($data) ? $data['type'] : $data, ['boolean', 'date', 'datetime', 'timestamp', 'json', 'array', 'object', 'collection']))
+            ->filter(fn($data) => in_array(is_array($data) ? $data['type'] : $data, ['boolean', 'date', 'datetime', 'timestamp', 'json', 'jsonb', 'array', 'object', 'collection']))
             ->map(function ($data, $column) {
                 $type = is_array($data) ? $data['type'] : $data;
                 $castType = match ($type) {
@@ -601,6 +602,16 @@ class ModuleMakerService
             }
 
             $bootLogic .= "    }\n";
+
+            if ($hasCreatedBy) {
+                $bootLogic .= "\n    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo(\Modules\User\Models\User::class, 'created_by');\n    }\n";
+            }
+            if ($hasUpdatedBy) {
+                $bootLogic .= "\n    public function updatedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo(\Modules\User\Models\User::class, 'updated_by');\n    }\n";
+            }
+            if ($hasDeletedBy) {
+                $bootLogic .= "\n    public function deletedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo(\Modules\User\Models\User::class, 'deleted_by');\n    }\n";
+            }
         }
 
         // Append relationships before closing bracket

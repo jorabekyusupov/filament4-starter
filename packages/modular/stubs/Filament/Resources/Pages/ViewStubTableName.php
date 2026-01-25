@@ -5,7 +5,7 @@ namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNa
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
-use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource;
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\StubTableNameResource;
 
 class ViewStubTableName extends ViewRecord
 {

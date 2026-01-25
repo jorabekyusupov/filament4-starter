@@ -21,13 +21,11 @@ class StubTable
             ->filters([
                 // Add your table filters here
             ])
-            ->actions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ]),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

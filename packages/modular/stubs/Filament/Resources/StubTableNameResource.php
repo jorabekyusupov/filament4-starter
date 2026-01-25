@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 
 use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Schemas\StubForm;
 use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Tables\StubTable;
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Pages;
 use StubModuleNamespace\StubSubModulePrefix\Models\StubTableName;
 
 class StubTableNameResource extends Resource
@@ -43,10 +44,10 @@ class StubTableNameResource extends Resource
     public static function getPages(): array
     {
         return [
-//            'index' => ListRecords::route('/'),
-//            'create' => CreateRecord::route('/create'),
-//            'view' => ViewRecord::route('/{record}'),
-//            'edit' => EditRecord::route('/{record}/edit'),
+            'index' => Pages\ListStubTableName::route('/'),
+            'create' => Pages\CreateStubTableName::route('/create'),
+            'edit' => Pages\EditStubTableName::route('/{record}/edit'),
+            'view' => Pages\ViewStubTableName::route('/{record}'),
         ];
     }
 

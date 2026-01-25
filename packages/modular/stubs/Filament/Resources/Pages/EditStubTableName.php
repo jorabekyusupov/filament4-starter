@@ -3,7 +3,7 @@
 namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Pages;
 
 use Filament\Resources\Pages\EditRecord;
-use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource;
+use StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\StubTableNameResource;
 
 class EditStubTableName extends EditRecord
 {

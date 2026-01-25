@@ -118,19 +118,31 @@
             background: var(--bg-item);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 10px;
+            padding: 10px 40px 10px 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .delete-btn {
-            margin-left: auto;
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
             color: #ef4444;
             cursor: pointer;
-            opacity: 0.7;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            z-index: 10;
         }
-        .delete-btn:hover { opacity: 1; }
+        .delete-btn:hover { 
+            background: rgba(239, 68, 68, 0.1); 
+        }
         
         .item-icon { width: 20px; text-align: center; color: var(--text-muted); }
         .item-label { font-size: 13px; font-weight: 600; }

@@ -264,7 +264,7 @@ class ModuleMakerResource extends Resource
                                 ->columnSpanFull(),
                         ]),
 
-                    Wizard\Step::make(__('Resource Layouts'))
+                    Wizard\Step::make(__('Form Layouts'))
                         ->description(__('Drag and drop to configure form layout'))
                         ->icon('heroicon-o-squares-plus')
                         ->schema([

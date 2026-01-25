@@ -301,6 +301,20 @@ class ModuleMakerResource extends Resource
                                 ->addActionLabel(__('Add Layout Configuration'))
                                 ->columnSpanFull(),
                         ]),
+
+                    Wizard\Step::make(__('Translations'))
+                        ->description(__('Translate module labels'))
+                        ->icon('heroicon-o-language')
+                        ->schema([
+                            \Filament\Forms\Components\ViewField::make('translations')
+                                ->hiddenLabel()
+                                ->view('maker-module::filament.forms.components.language-manager')
+                                ->viewData([
+                                    'locales' => getLocales(),
+                                    'localeLabels' => getLocaleLabels(),
+                                ])
+                                ->columnSpanFull(),
+                        ]),
                 ])
                     ->columnSpanFull()
                     ->skippable()

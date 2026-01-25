@@ -53,7 +53,11 @@ class ModuleMakerService
                 $columns = array_merge(
                     $columns,
                     $softDeletes ? [['name' => 'deleted_at', 'type' => 'softDeletes']] : [],
-                    $logged ? [['name' => 'created_by', 'type' => 'unsignedBigInteger'], ['name' => 'updated_by', 'type' => 'unsignedBigInteger']] : [],
+                    $logged ? array_merge(
+                        [['name' => 'created_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true], 
+                         ['name' => 'updated_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true]],
+                        $softDeletes ? [['name' => 'deleted_by', 'type' => 'foreignId', 'related_model' => 'App\Models\User', 'nullable' => true]] : []
+                    ) : [],
                     $status ? [['name' => 'status', 'type' => 'boolean']] : []
                 );
 
@@ -205,6 +209,9 @@ class ModuleMakerService
 
         // Create Resource Pages
         $this->createResourcePages($commandName, $moduleName, $resourceName, $modelName);
+
+        // Create Language Files
+        $this->createLanguageFiles($commandName, $resourceData['translations'] ?? []);
     }
 
     public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData = [])
@@ -548,9 +555,34 @@ class ModuleMakerService
             }
         }
         
+        // Helper to check if column exists
+        $hasColumn = fn($name) => collect($columns)->contains(fn($c) => ($c['name'] ?? null) === $name || $c === $name);
+
+        $bootLogic = "";
+        
+        $hasCreatedBy = $hasColumn('created_by');
+        $hasUpdatedBy = $hasColumn('updated_by');
+        $hasDeletedBy = $hasColumn('deleted_by');
+
+        if ($hasCreatedBy || $hasUpdatedBy || $hasDeletedBy) {
+            $bootLogic .= "\n    protected static function booted()\n    {\n";
+            
+            if ($hasCreatedBy) {
+                $bootLogic .= "        static::creating(function (\$model) {\n            \$model->created_by = auth()->id();\n        });\n";
+            }
+            if ($hasUpdatedBy) {
+                $bootLogic .= "        static::updating(function (\$model) {\n            \$model->updated_by = auth()->id();\n        });\n";
+            }
+            if ($hasDeletedBy) {
+                 $bootLogic .= "        static::deleting(function (\$model) {\n            \$model->deleted_by = auth()->id();\n            \$model->saveQuietly();\n        });\n";
+            }
+
+            $bootLogic .= "    }\n";
+        }
+
         // Append relationships before closing bracket
         // Current stub ends with }
-        $modelFileContent = substr(trim($modelFileContent), 0, -1) . $relationships . "\n}";
+        $modelFileContent = substr(trim($modelFileContent), 0, -1) . $bootLogic . $relationships . "\n}";
 
         file_put_contents($modelFile, $modelFileContent);
 
@@ -954,6 +986,44 @@ class ModuleMakerService
         }
 
         return implode(",\n                ", $components);
+    }
+    
+    private function createLanguageFiles(string $commandName, array $translations)
+    {
+        if (empty($translations)) {
+            return;
+        }
+
+        // Organize translations by locale
+        // Input: 'Key' => ['en' => 'Value', 'ru' => 'Value']
+        // Output: 'en' => ['Key' => 'Value'], 'ru' => ['Key' => 'Value']
+        
+        $localesData = [];
+        
+        foreach ($translations as $key => $locales) {
+            foreach ($locales as $code => $value) {
+                if (!empty($value)) {
+                    $localesData[$code][$key] = $value;
+                }
+            }
+        }
+
+        $langDir = base_path("modules/{$commandName}/resources/lang");
+        if (!is_dir($langDir)) {
+            mkdir($langDir, 0755, true);
+        }
+
+        foreach ($localesData as $code => $keys) {
+            $filePath = "{$langDir}/{$code}.json";
+            
+            // Merge with existing if file exists
+            if (file_exists($filePath)) {
+                $existing = json_decode(file_get_contents($filePath), true) ?? [];
+                $keys = array_merge($existing, $keys);
+            }
+
+            file_put_contents($filePath, json_encode($keys, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
     }
     private function generateTableFilters(array $builderBlocks): string
     {

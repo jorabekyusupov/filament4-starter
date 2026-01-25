@@ -239,7 +239,7 @@
                     <div x-show="table.showSettings" style="padding:10px; background:#252525; border-bottom:1px solid #444; font-size:11px;">
                          <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.has_resource"> Generate Resource</label>
                          <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.soft_deletes"> Soft Deletes</label>
-                         <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.logged"> Timestamps</label>
+                         <label style="display:block; margin-bottom:5px;"><input type="checkbox" x-model="table.logged"> Loggable (User Tracking)</label>
                     </div>
 
                     <!-- Columns -->

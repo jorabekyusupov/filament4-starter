@@ -484,19 +484,17 @@ class ModuleMakerService
                 $relationName = Str::camel(str_replace('_id', '', $columnName));
                 
                 if ($specifiedModel) {
-                    // Use FQCN directly: belongsTo(\Modules\Core\Models\User::class)
-                    // If specifiedModel is just "User" (legacy input), studly case it
+                    // Use FQCN directly if backslash present
                     if (str_contains($specifiedModel, '\\')) {
                          $relatedClass = "\\{$specifiedModel}";
                     } else {
-                         // Fallback for simple name (assumes same namespace or standard alias, risky but handles old inputs)
-                         $relatedClass = Str::studly($specifiedModel);
+                         // Fallback: Studly Singular
+                         $relatedClass = Str::studly(Str::singular($specifiedModel));
                     }
                      $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedClass}::class);\n    }\n";
                 } else {
-                    // Infer related model class (namespace needs to be handled if across modules, simplified for now)
-                    // Assuming related model name is StudlyCase of relation name
-                    $relatedModelName = Str::studly($relationName);
+                    // Infer related model class: Studly Singular of relation name
+                    $relatedModelName = Str::studly(Str::singular($relationName));
                     $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedModelName}::class);\n    }\n";
                 }
             }

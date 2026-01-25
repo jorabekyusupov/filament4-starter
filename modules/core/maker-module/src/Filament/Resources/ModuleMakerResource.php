@@ -101,101 +101,14 @@ class ModuleMakerResource extends Resource
                         ->icon('heroicon-o-table-cells')
                         ->schema([
 
-                            Repeater::make('tables')
-                                ->label(__('Tables'))
-                                ->schema([
-                                    Grid::make(4)
-                                        ->schema([
-                                            TextInput::make('name')
-                                                ->label(__('Table Name'))
-                                                ->placeholder(__('posts'))
-                                                ->required()
-                                                ->helperText(__('The name of the table, e.g. "posts"'))
-                                                ->columnSpan(2)
-                                                ->live(onBlur: true),
-
-                                            Toggle::make('has_resource')
-                                                ->label(__('Generate Resource'))
-                                                ->default(false)
-                                                ->onColor('success')
-                                                ->offColor('gray')
-                                                ->helperText(__('Create a Filament Resource for this table'))
-                                                ->columnSpan(1)
-                                                ->live(),
-
-                                            Fieldset::make(__('Options'))
-                                                ->schema([
-                                                    Toggle::make('soft_deletes')
-                                                        ->label(__('Soft Deletes'))
-                                                        ->default(false),
-                                                    Toggle::make('logged')
-                                                        ->label(__('User Timestamps'))
-                                                        ->default(false),
-                                                    Toggle::make('status')
-                                                        ->label(__('Status Column'))
-                                                        ->default(true),
-                                                ])
-                                                ->columns(3)
-                                                ->columnSpan(4),
-                                        ]),
-
-                                    Repeater::make('columns')
-                                        ->label(__('Columns'))
-                                        ->schema([
-                                            Grid::make(2)
-                                                ->schema([
-                                                    TextInput::make('name')
-                                                        ->label(__('Column Name'))
-                                                        ->required()
-                                                        ->placeholder('title')
-                                                        ->live(onBlur: true),
-                                                    Select::make('type')
-                                                        ->label(__('Column Type'))
-                                                        ->required()
-                                                        ->searchable()
-                                                        ->options($service->getDataTypes(null))
-                                                        ->live(),
-                                                    Select::make('related_model')
-                                                        ->label(__('Related Model'))
-                                                        ->placeholder('Select Model')
-                                                        ->helperText(__('Model for relationship'))
-                                                        ->required()
-                                                        ->searchable()
-                                                        ->options($service->getAvailableModels())
-                                                        ->visible(fn(Get $get) => $get('type') === 'foreignId'),
-                                                    TextInput::make('related_column')
-                                                        ->label(__('Related Column'))
-                                                        ->placeholder('name')
-                                                        ->default('name')
-                                                        ->helperText(__('Column to display in select (default: name)'))
-                                                        ->required()
-                                                        ->visible(fn(Get $get) => $get('type') === 'foreignId'),
-
-                                                    Grid::make(3)
-                                                        ->schema([
-                                                            \Filament\Forms\Components\Toggle::make('nullable')
-                                                                ->label('Nullable')
-                                                                ->inline(false),
-                                                            \Filament\Forms\Components\Toggle::make('unique')
-                                                                ->label('Unique')
-                                                                ->inline(false),
-                                                            \Filament\Forms\Components\Toggle::make('index')
-                                                                ->label('Index')
-                                                                ->inline(false),
-                                                        ])->columnSpanFull(),
-                                                ]),
-                                        ])
-                                        ->defaultItems(1)
-                                        ->collapsible()
-                                        ->columnSpanFull()
-                                        ->live(),
+                            \Filament\Forms\Components\ViewField::make('tables')
+                                ->hiddenLabel()
+                                ->view('maker-module::filament.forms.components.database-builder')
+                                ->viewData([
+                                    'availableModels' => $service->getAvailableModels(),
+                                    'dataTypes' => $service->getDataTypes(null),
                                 ])
-                                ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
-                                ->collapsed(fn($state) => count($state) > 1)
-                                ->defaultItems(0)
-                                ->addActionLabel(__('Add Table'))
-                                ->reorderable(false)
-                                ->live(), // Important for next step to see changes
+                                ->columnSpanFull(),
                         ]),
 
                     Wizard\Step::make(__('Table Layouts'))
@@ -207,11 +120,29 @@ class ModuleMakerResource extends Resource
                                 ->schema([
                                     Select::make('table_name')
                                         ->label(__('Table'))
-                                        ->options(function (Get $get) {
-                                            $tables = $get('../../tables') ?? [];
+                                        ->options(function (Get $get, \Livewire\Component $livewire) {
+                                            $tables = $get('tables') 
+                                                ?? $get('../../tables') 
+                                                ?? $get('../../../tables')
+                                                ?? $livewire->data['tables'] // Try accessing root data directly
+                                                ?? [];
+
+                                            \Illuminate\Support\Facades\Log::info('TableOptions Debug', [
+                                                'path_root' => count($get('tables') ?? []),
+                                                'path_2' => count($get('../../tables') ?? []),
+                                                'path_3' => count($get('../../../tables') ?? []),
+                                                'livewire_data' => count($livewire->data['tables'] ?? []),
+                                                'found' => count($tables),
+                                                'first_item' => collect($tables)->first(),
+                                            ]);
+                                            
+                                            // Ensure we work with array of arrays or array of objects
                                             return collect($tables)
-                                                ->where('has_resource', true)
-                                                ->filter(fn($table) => !empty($table['name']))
+                                                ->filter(function($t) {
+                                                    // Handle both array and object (if casting issue)
+                                                    $t = (array)$t;
+                                                    return !empty($t['name']); 
+                                                })
                                                 ->pluck('name', 'name')
                                                 ->toArray();
                                         })
@@ -274,7 +205,12 @@ class ModuleMakerResource extends Resource
                                     Select::make('table_name')
                                         ->label(__('Table'))
                                         ->options(function (Get $get) {
-                                            $tables = $get('../../tables') ?? [];
+                                            $tables = $get('../../tables') 
+                                                ?? $get('../../../tables') 
+                                                ?? $get('../../../../tables') 
+                                                ?? $get('tables')
+                                                ?? [];
+                                            
                                             return collect($tables)
                                                 ->where('has_resource', true)
                                                 ->filter(fn($table) => !empty($table['name']))

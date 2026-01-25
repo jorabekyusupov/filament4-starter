@@ -674,17 +674,14 @@ class ModuleMakerService
                     
                     if ($isTranslatable && $colName) {
                         $components[] = "...getNameInputsFilament('{$colName}')";
-                    } elseif ($colName && isset($columns[$colName])) {
-                        $colData = $columns[$colName];
-                        $colType = is_array($colData) ? $colData['type'] : $colData;
-                        $colMeta = is_array($colData) ? $colData : [];
-                        
-                        // Pass advanced related_column info if needed, but getFieldString handles inferring.
-                        // However, we want strict custom query logic for relations now.
-                        $components[] = $this->getFieldString($colName, $colType, $colMeta);
                     } elseif ($colName) {
-                         // Fallback if type not found (shouldn't happen if validated)
-                        $components[] = $this->getFieldString($colName, 'string');
+                        $dbColData = $columns[$colName] ?? [];
+                        $dbColData = is_array($dbColData) ? $dbColData : [];
+                        
+                        $mergedMeta = array_merge($dbColData, $data);
+                        $colType = $mergedMeta['type'] ?? 'string';
+                        
+                        $components[] = $this->getFieldString($colName, $colType, $mergedMeta);
                     }
                     break;
 
@@ -716,26 +713,61 @@ class ModuleMakerService
                     break;
                 
                 case 'grid':
+                case 'split': // Split is handled similarly to Grid in Filament, or use Split component.
+                // Filament Split component structure: Split::make([ Section::make(), Section::make() ])
+                // But our builder uses generic 2-col structure.
+                // If type is 'split', use Split::make([]). If 'grid', Grid::make().
                     $gridCols = $data['columns'] ?? 2;
                     $gridItems = $data['items'] ?? []; 
-                    // items is expected to be { 0: [...], 1: [...] } for columns
                     
                     $colComponents = [];
+                    // Loop through columns
+                    // Note: Split component expects an array of components, it distributes them. 
+                    // Grid expects schema per column? No, Grid::make()->schema([ ...items... ]) uses columnSpan to place items?
+                    // Actually Filament Grid: schema([...]) -> items flow. 
+                    // My previous logic: Create Groups for each column.
+                    
                     for ($i = 0; $i < $gridCols; $i++) {
                         $colBlocks = $gridItems[$i] ?? [];
                         if (empty($colBlocks)) {
-                             // Empty column placeholder to maintain grid structure? 
-                             // Or just empty group.
-                             $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
+                             // Empty column placeholder
+                             if ($type === 'split') {
+                                 // specific section for split?
+                                 $colComponents[] = "\Filament\Forms\Components\Section::make([])"; 
+                             } else {
+                                 $colComponents[] = "\Filament\Forms\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
+                             }
                              continue;
                         }
                         $colContent = $this->generateFormSchema($columns, $colBlocks);
-                        $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
+                        
+                        if ($type === 'split') {
+                            $colComponents[] = "\Filament\Forms\Components\Section::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])";
+                        } else {
+                            $colComponents[] = "\Filament\Forms\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
+                        }
                     }
                     
                     $gridContent = implode(",\n                        ", $colComponents);
                     
-                    $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
+                    if ($type === 'split') {
+                         $components[] = "\Filament\Forms\Components\Split::make([\n                        {$gridContent}\n                    ])";
+                    } else {
+                         $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
+                    }
+                    break;
+
+                case 'wizard':
+                    $steps = $data['steps'] ?? [];
+                    $stepComponents = [];
+                    foreach ($steps as $step) {
+                        $stepLabel = $step['label'] ?? 'Step';
+                        $stepBlocks = $step['schema'] ?? [];
+                        $stepContent = $this->generateFormSchema($columns, $stepBlocks);
+                        $stepComponents[] = "\Filament\Forms\Components\Wizard\Step::make('{$stepLabel}')\n                            ->schema([\n                                " . str_replace("\n", "\n        ", $stepContent) . "\n                            ])";
+                    }
+                    $stepsContentString = implode(",\n                        ", $stepComponents);
+                    $components[] = "\Filament\Forms\Components\Wizard::make([\n                        {$stepsContentString}\n                    ])";
                     break;
             }
         }
@@ -769,20 +801,26 @@ class ModuleMakerService
         }
         
         // Basic type mapping
+        $field = "";
+        
         switch ($type) {
             case 'boolean':
-                return "\Filament\Forms\Components\Toggle::make('{$name}')->label('{$label}')";
+                $field = "\Filament\Forms\Components\Toggle::make('{$name}')\n                    ->label('{$label}')";
+                break;
             case 'text':
             case 'mediumText':
             case 'longText':
             case 'json':
             case 'jsonb':
-                return "\Filament\Forms\Components\Textarea::make('{$name}')->label('{$label}')";
+                $field = "\Filament\Forms\Components\Textarea::make('{$name}')\n                    ->label('{$label}')";
+                break;
             case 'date':
-                return "\Filament\Forms\Components\DatePicker::make('{$name}')->label('{$label}')";
+                $field = "\Filament\Forms\Components\DatePicker::make('{$name}')\n                    ->label('{$label}')";
+                break;
             case 'datetime':
             case 'timestamp':
-                return "\Filament\Forms\Components\DateTimePicker::make('{$name}')->label('{$label}')";
+                $field = "\Filament\Forms\Components\DateTimePicker::make('{$name}')\n                    ->label('{$label}')";
+                break;
             case 'integer':
             case 'tinyInteger':
             case 'smallInteger':
@@ -793,10 +831,35 @@ class ModuleMakerService
             case 'decimal':
             case 'float':
             case 'double':
-                return "\Filament\Forms\Components\TextInput::make('{$name}')->label('{$label}')->numeric()";
+                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label('{$label}')\n                    ->numeric()";
+                break;
             default:
-                return "\Filament\Forms\Components\TextInput::make('{$name}')->label('{$label}')";
+                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label('{$label}')";
+                break;
         }
+
+        // Apply Common Metadata Modifiers
+        if (!empty($metadata['required'])) {
+            $field .= "\n                    ->required()";
+        }
+        if (!empty($metadata['placeholder'])) {
+            $field .= "\n                    ->placeholder('{$metadata['placeholder']}')";
+        }
+        if (!empty($metadata['helper_text'])) {
+            $field .= "\n                    ->helperText('{$metadata['helper_text']}')";
+        }
+        if (!empty($metadata['hint'])) {
+            $field .= "\n                    ->hint('{$metadata['hint']}')";
+        }
+         if (!empty($metadata['default'])) {
+            $field .= "\n                    ->default('{$metadata['default']}')";
+        }
+        if (!empty($metadata['column_span'])) {
+            $span = $metadata['column_span'] === 'full' ? 'full' : $metadata['column_span'];
+            $field .= "\n                    ->columnSpan('{$span}')";
+        }
+
+        return $field;
     }
 
     private function generateTableSchema(array $columns, array $builderBlocks): string

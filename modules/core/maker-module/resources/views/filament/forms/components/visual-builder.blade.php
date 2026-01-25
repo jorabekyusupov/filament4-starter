@@ -126,6 +126,26 @@
         }
         .comp-wrapper:hover > .delete-btn { display: flex; }
 
+        /* Settings Button */
+        .settings-btn {
+            position: absolute;
+            top: -12px;
+            right: 18px; /* Next to delete btn */
+            width: 26px;
+            height: 26px;
+            background: #3b82f6; /* Blue */
+            color: white;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .comp-wrapper:hover > .settings-btn { display: flex; }
+
         /* FIELDSET */
         .f-fieldset {
             border: 1px solid var(--border-color);
@@ -255,6 +275,15 @@
                 <div class="vb-draggable-item" draggable="true" @dragstart="dragStart($event, 'tabs')">
                     <i class="fas fa-folder"></i> Tabs
                 </div>
+                <div class="vb-draggable-item" draggable="true" @dragstart="dragStart($event, 'wizard')">
+                    <i class="fas fa-hat-wizard"></i> Wizard
+                </div>
+                <!-- Split (Columns) is similar to Grid but typically just 2 side-by-side or specific ratios. 
+                     For now let's use Grid as advanced, but if user wants Split, we can alias it or make a specific "Split" UI. 
+                     The user asked for Split. Let's add it as a simplified 2-col. -->
+                <div class="vb-draggable-item" draggable="true" @dragstart="dragStart($event, 'split')">
+                    <i class="fas fa-columns"></i> Split
+                </div>
             </div>
 
             <div>
@@ -293,10 +322,13 @@
                     <div class="comp-wrapper" >
                          <!-- Delete Button -->
                         <div class="delete-btn" @click="state.splice(index, 1)"><i class="fas fa-times"></i></div>
+                        <!-- Settings Button -->
+                        <div class="settings-btn" @click="openSettings(item)"><i class="fas fa-cog"></i></div>
 
                         <!-- GRID -->
                         <template x-if="item.type === 'grid'">
                             <div class="f-grid-container">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:bold; margin-bottom:5px;">Grid</div>
                                 <div class="grid-controls">
                                     <div class="grid-group">
                                         <span class="grid-group-label">2 COL</span>
@@ -321,7 +353,38 @@
                                             <template x-for="(subItem, subIndex) in (item.data.items[colIndex-1] || [])" :key="subIndex">
                                                 <div class="comp-wrapper" style="margin-bottom:10px;">
                                                     <div class="delete-btn" @click="item.data.items[colIndex-1].splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                                    <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
                                                     <!-- Simple Field Preview for Grid -->
+                                                    <div style="background:var(--bg-item); padding:8px; border:1px solid var(--border-color); border-radius:4px;">
+                                                        <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
+                                                        <input type="text" class="f-input" disabled placeholder="...">
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- SPLIT -->
+                        <template x-if="item.type === 'split'">
+                            <div class="f-grid-container" style="border-style:solid; border-width:1px;">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:bold; margin-bottom:5px;">Split</div>
+                                <div class="f-grid-row" style="grid-template-columns: 1fr 1fr;"> <!-- Always 2 cols for split default -->
+                                    <template x-for="colIndex in 2">
+                                        <div class="f-grid-col"
+                                             x-data="{ isOver: false }"
+                                             :class="{ 'drag-over': isOver }"
+                                             @dragover.prevent.stop="isOver = true"
+                                             @dragleave.prevent.stop="isOver = false"
+                                             @drop.prevent.stop="isOver = false; handleDrop($event, item.data, colIndex-1)"
+                                        >
+                                            <div x-init="if(!item.data.items) item.data.items = {}; if(!item.data.items[colIndex-1]) item.data.items[colIndex-1] = []"></div>
+                                            <template x-for="(subItem, subIndex) in (item.data.items[colIndex-1] || [])" :key="subIndex">
+                                                <div class="comp-wrapper" style="margin-bottom:10px;">
+                                                    <div class="delete-btn" @click="item.data.items[colIndex-1].splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                                     <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
                                                     <div style="background:var(--bg-item); padding:8px; border:1px solid var(--border-color); border-radius:4px;">
                                                         <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                         <input type="text" class="f-input" disabled placeholder="...">
@@ -351,6 +414,7 @@
                                     <template x-for="(subItem, subIndex) in (item.data.schema || [])" :key="subIndex">
                                         <div class="comp-wrapper">
                                             <div class="delete-btn" @click="item.data.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                            <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
                                             <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                 <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                 <input type="text" class="f-input" disabled>
@@ -376,6 +440,7 @@
                                     <template x-for="(subItem, subIndex) in (item.data.schema || [])" :key="subIndex">
                                         <div class="comp-wrapper">
                                             <div class="delete-btn" @click="item.data.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                            <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
                                             <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                 <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                 <input type="text" class="f-input" disabled>
@@ -408,6 +473,47 @@
                                              <template x-for="(subItem, subIndex) in (tab.schema || [])" :key="subIndex">
                                                  <div class="comp-wrapper">
                                                     <div class="delete-btn" @click="tab.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                                    <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
+                                                    <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
+                                                        <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
+                                                        <input type="text" class="f-input" disabled>
+                                                    </div>
+                                                 </div>
+                                             </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- WIZARD -->
+                        <template x-if="item.type === 'wizard'">
+                            <div class="f-tabs" style="border-color:var(--primary);">
+                                <div class="f-tabs-header" style="background:rgba(217, 119, 6, 0.05);">
+                                    <div style="padding:10px; font-weight:bold; font-size:11px; text-transform:uppercase; color:var(--primary);"><i class="fas fa-hat-wizard"></i> Wizard</div>
+                                    <template x-for="(step, sIndex) in item.data.steps" :key="sIndex">
+                                        <div class="f-tab-item" @click.stop>
+                                            <span style="font-weight:bold; margin-right:4px;" x-text="sIndex + 1 + '.'"></span>
+                                            <input x-model="step.label" style="border:none; background:transparent; width:80px; color:var(--text-main);"> 
+                                            <span @click="item.data.steps.splice(sIndex, 1)" style="color:red; cursor:pointer;">&times;</span>
+                                        </div>
+                                    </template>
+                                    <div class="f-tab-item-add" @click="item.data.steps.push({label:'New Step', schema:[]})">+</div>
+                                </div>
+                                <div class="f-tab-content">
+                                    <template x-for="(step, sIndex) in item.data.steps">
+                                        <div class="vb-drop-zone" style="min-height:50px; border:1px dashed var(--border-color); margin-bottom:10px;"
+                                             x-data="{ isOver: false }"
+                                             :class="{ 'drag-over': isOver }"
+                                             @dragover.prevent.stop="isOver = true"
+                                             @dragleave.prevent.stop="isOver = false"
+                                             @drop.prevent.stop="isOver = false; handleDrop($event, step)"
+                                        >
+                                             <div style="font-size:10px; color:var(--text-muted); margin-bottom:5px;">Step <span x-text="sIndex+1"></span> Content</div>
+                                             <template x-for="(subItem, subIndex) in (step.schema || [])" :key="subIndex">
+                                                 <div class="comp-wrapper">
+                                                    <div class="delete-btn" @click="step.schema.splice(subIndex, 1)"><i class="fas fa-times"></i></div>
+                                                    <div class="settings-btn" @click="openSettings(subItem)"><i class="fas fa-cog"></i></div>
                                                     <div style="background:var(--bg-item); padding:10px; border:1px solid var(--border-color); border-radius:6px;">
                                                         <label class="f-label" x-text="subItem.data.label || subItem.data.column"></label>
                                                         <input type="text" class="f-input" disabled>
@@ -431,19 +537,107 @@
                                     <input type="text" class="f-input" disabled>
                                 </template>
                                 
-                                <div x-show="item.data.type !== 'foreignId'" style="margin-top:8px; font-size:11px; border-top:1px solid var(--border-color); padding-top:4px;">
-                                    <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer; color:var(--text-muted);">
-                                        <input type="checkbox" x-model="item.data.is_translatable"> 
-                                        <span>Translatable (getNameInputsFilament)</span>
-                                    </label>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:10px; color:var(--text-muted);">
+                                    <div x-show="item.data.type !== 'foreignId'">
+                                         <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                                            <input type="checkbox" x-model="item.data.is_translatable"> 
+                                            <span>Translatable</span>
+                                        </label>
+                                    </div>
+                                    <div style="font-style:italic;" x-show="item.data.required">
+                                        <i class="fas fa-asterisk" style="font-size:8px; color:red;"></i> Required
+                                    </div>
                                 </div>
                             </div>
                         </template>
 
                     </div>
                 </template>
+                </template>
             </div>
         </div>
+
+        <!-- SETTINGS MODAL -->
+        <template x-teleport="body">
+            <div x-show="modalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm" x-cloak>
+                <div class="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl transform transition-all" @click.away="modalOpen = false">
+                    
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+                            Component Settings
+                        </h3>
+                        <button type="button" @click="modalOpen = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+                
+                    <template x-if="selectedItem">
+                        <div class="p-6 flex flex-col gap-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                            
+                            <!-- Label -->
+                            <div x-show="selectedItem.data.label !== undefined">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Label</label>
+                                <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.label">
+                            </div>
+
+                            <!-- Column Span -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Column Span</label>
+                                <select class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.column_span">
+                                    <option value="">Default</option>
+                                    <option value="1">1 Column</option>
+                                    <option value="2">2 Columns</option>
+                                    <option value="3">3 Columns</option>
+                                    <option value="4">4 Columns</option>
+                                    <option value="full">Full Width</option>
+                                </select>
+                            </div>
+
+                            <!-- Field Specifics -->
+                            <template x-if="selectedItem.type === 'field'">
+                                <div class="flex flex-col gap-5">
+                                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" x-model="selectedItem.data.required" class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"> 
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required Field</span>
+                                    </label>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Placeholder</label>
+                                        <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.placeholder">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Helper Text</label>
+                                        <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.helper_text">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Hint</label>
+                                        <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.hint">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Default Value</label>
+                                        <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.default">
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-xl border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="button" @click="saveSettings()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 
     <script>
@@ -462,11 +656,24 @@
                     draggedType: null,
                     draggedData: null,
                     draggingOverRoot: false,
+                    modalOpen: false,
+                    selectedItem: null,
 
                     init() {
                          if (!this.state || typeof this.state !== 'object') {
                              this.state = [];
                          }
+                    },
+
+                    openSettings(item) {
+                        this.selectedItem = item;
+                        if (!this.selectedItem.data) this.selectedItem.data = {};
+                        this.modalOpen = true;
+                    },
+
+                    saveSettings() {
+                        this.modalOpen = false;
+                        // Auto-saved via x-model, but we can do extra logic here
                     },
 
                     dragStart(e, type, data = null) {
@@ -507,9 +714,11 @@
                     createItem(type, data) {
                         const id = Math.random().toString(36).substr(2, 9);
                         if (type === 'grid') return { id, type, data: { columns: 2, items: {} } };
+                        if (type === 'split') return { id, type, data: { columns: 2, items: {} } }; // Same as grid for now structure-wise, distinguished by type
                         if (type === 'section') return { id, type, data: { label: 'Section Title', schema: [] } };
                         if (type === 'fieldset') return { id, type, data: { label: 'New Group', schema: [] } };
                         if (type === 'tabs') return { id, type, data: { tabs: [{label: 'Tab 1', schema: []}] } };
+                        if (type === 'wizard') return { id, type, data: { steps: [{label: 'Step 1', schema: []}] } };
                         if (type === 'field') {
                          return { 
                              id, 
@@ -519,7 +728,9 @@
                                  label: data.name, 
                                  type: data.type,
                                  is_translatable: false,
-                                 related_column: 'name'
+                                 related_column: 'name',
+                                 required: false,
+                                 column_span: null
                              } 
                         };
                     }

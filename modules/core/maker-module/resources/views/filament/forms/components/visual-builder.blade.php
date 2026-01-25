@@ -611,6 +611,10 @@
                             <div x-show="selectedItem.data.label !== undefined">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Label</label>
                                 <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm" x-model="selectedItem.data.label">
+                                <label class="inline-flex items-center gap-2 mt-2 cursor-pointer">
+                                    <input type="checkbox" x-model="selectedItem.data.translate_label" class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Translate Key</span>
+                                </label>
                             </div>
 
                             <!-- Column Span -->

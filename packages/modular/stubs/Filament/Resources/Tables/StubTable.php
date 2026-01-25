@@ -3,12 +3,6 @@
 namespace StubModuleNamespace\StubSubModulePrefix\Filament\Resources\StubTableNameResource\Tables;
 
 use Filament\Tables\Table;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use StubModuleNamespace\StubSubModulePrefix\Models\StubTableName;
 
 class StubTable
 {
@@ -22,13 +16,10 @@ class StubTable
                 // Add your table filters here
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                StubRecordActions
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                StubBulkActions
             ]);
     }
 }

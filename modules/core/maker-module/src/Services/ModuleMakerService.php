@@ -71,23 +71,23 @@ class ModuleMakerService
 
                 $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
                 $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
-                $this->createModelFile($commandName, $data['name'], $tableName, $columnsAssociative, $softDeletes, $table);
+                $this->createModelFile($commandName, $studlyModuleName, $tableName, $columnsAssociative, $softDeletes, $table);
 
                 // Add Filament Resource creation if has_resource is true
                 if ($table['has_resource'] ?? false) {
-                    $resourceData = [
+                    // Find layout for this table
+                    $tableLayout = collect($resourceLayouts)->firstWhere('table_name', $tableName) ?? [];
+
+                    $resourceData = array_merge([
                         'name' => Str::studly(Str::singular($tableName)),
                         'model_name' => Str::studly(Str::singular($tableName)),
-                    ];
-                    
-                    // Find layout for this table
-                    $tableLayout = collect($resourceLayouts)->firstWhere('table_name', $tableName);
+                    ], $tableLayout);
                     $formSchema = $tableLayout['schema'] ?? [];
 
                     $tableBuilder = collect($tableLayouts)->firstWhere('table_name', $tableName);
                     $tableSchema = $tableBuilder['schema'] ?? [];
 
-                    $this->createFilamentResource($commandName, $data['name'], $resourceData, $columnsAssociative, $formSchema, $tableSchema);
+                    $this->createFilamentResource($commandName, $studlyModuleName, $resourceData, $columnsAssociative, $formSchema, $tableSchema);
                 }
 
                 foreach ($columns as $col) {
@@ -200,7 +200,7 @@ class ModuleMakerService
         $modelName = Str::studly($resourceData['model_name'] ?? Str::singular($resourceData['name']));
 
         // Create the main Resource file
-        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData);
+        $this->createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData, $resourceData);
 
         // Create Schemas/Form file
         $this->createFormFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData);
@@ -215,7 +215,7 @@ class ModuleMakerService
         $this->createLanguageFiles($commandName, $resourceData['translations'] ?? []);
     }
 
-    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData = [])
+    public function createResourceFile($commandName, $moduleName, $resourceName, $modelName, $columns, $formLayoutData, $tableLayoutData = [], $resourceConfig = [])
     {
         $resourceFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/{$resourceName}Resource.php");
         $stub = file_get_contents(base_path('packages/modular/stubs/Filament/Resources/StubTableNameResource.php'));
@@ -226,17 +226,26 @@ class ModuleMakerService
             mkdir($resourcesDir, 0755, true);
         }
 
-        // Extract configuration for this specific resource
-        $layoutConfig = collect($formLayoutData['resource_layouts'] ?? [])
-            ->firstWhere('table_name', $resourceData['table_name'] ?? $columns[0]['table_name'] ?? '');
+        // Helper to formatting strings (quote or translate)
+        $formatStr = function ($key, $default) use ($resourceConfig) {
+            $val = $resourceConfig[$key] ?? $default;
+            $isTranslatable = $resourceConfig["translate_{$key}"] ?? false;
+            return $isTranslatable ? "__('{$val}')" : "'{$val}'";
+        };
 
-        // Defaults
-        $navLabel = $layoutConfig['navigation_label'] ?? Str::title(Str::plural($resourceName));
-        $navGroup = $layoutConfig['navigation_group'] ?? 'Content';
-        $navIcon = $layoutConfig['navigation_icon'] ?? 'heroicon-o-rectangle-stack';
-        $navSort = $layoutConfig['navigation_sort'] ?? 1;
-        $modelLabel = $layoutConfig['model_label'] ?? Str::title($modelName);
-        $pluralModelLabel = $layoutConfig['plural_model_label'] ?? Str::title(Str::plural($modelName));
+        $navLabel = $formatStr('navigation_label', Str::title(Str::plural($resourceName)));
+        $navGroup = $formatStr('navigation_group', 'Content');
+        $navIcon = $formatStr('navigation_icon', 'heroicon-o-rectangle-stack');
+        
+        $navSort = $resourceConfig['navigation_sort'] ?? 1;
+
+        $modelLabel = $formatStr('model_label', Str::title($modelName));
+        $pluralModelLabel = $formatStr('plural_model_label', Str::title(Str::plural($modelName)));
+
+        // Navigation Group Property Special Handling
+        $navGroupVal = $resourceConfig['navigation_group'] ?? 'Content';
+        $navGroupIsTranslatable = $resourceConfig['translate_navigation_group'] ?? false;
+        $navGroupProperty = $navGroupIsTranslatable ? 'null' : "'{$navGroupVal}'";
 
         $resourceFileContent = str_replace(
             [
@@ -247,6 +256,7 @@ class ModuleMakerService
                 'StubForm',
                 'StubTable',
                 'StubNavigationLabel',
+                'StubNavigationGroupProperty',
                 'StubNavigationGroup',
                 'StubNavigationIcon',
                 'StubNavigationSort',
@@ -255,12 +265,13 @@ class ModuleMakerService
             ],
             [
                 'Modules',
-                $resourceName,
+                $moduleName,
                 $modelName,
-                Str::plural($resourceName),
-                $modelName . 'Form',
-                $modelName . 'Table',
+                Str::plural($modelName),
+                $resourceName . 'Form',
+                $resourceName . 'Table',
                 $navLabel,
+                $navGroupProperty,
                 $navGroup,
                 $navIcon,
                 $navSort,
@@ -269,8 +280,6 @@ class ModuleMakerService
             ],
             $stub
         );
-        
-        // No need to inject schema here anymore, as it delegates to Form and Table classes.
         
         file_put_contents($resourceFile, $resourceFileContent);
     }
@@ -294,7 +303,7 @@ class ModuleMakerService
             ],
             [
                 'Modules',
-                $resourceName,
+                $moduleName,
                 $modelName,
                 $modelName . 'Form'
             ],
@@ -326,7 +335,7 @@ class ModuleMakerService
             ],
             [
                 'Modules',
-                $resourceName,
+                $moduleName,
                 $modelName,
                 $modelName . 'Table'
             ],
@@ -342,24 +351,16 @@ class ModuleMakerService
 
         // Generate Actions
         $actionsSchema = $this->generateTableActions($layoutData);
-        if (!empty($actionsSchema)) {
-            // Replace default actions block
-            $content = preg_replace(
-                '/->recordActions\(\[\s*EditAction::make\(\),\s*DeleteAction::make\(\),\s*\]\)/s',
-                "->recordActions([\n                " . $actionsSchema . "\n            ])",
-                $content
-            );
+        if (empty($actionsSchema)) {
+             $actionsSchema = "\Filament\Actions\EditAction::make(),\n                \Filament\Actions\DeleteAction::make(),\n                \Filament\Actions\ViewAction::make(),";
         }
+        $content = str_replace('StubRecordActions', $actionsSchema, $content);
 
-        // Generate Header Actions
-        $headerActionsSchema = $this->generateTableHeaderActions($layoutData);
-        if (!empty($headerActionsSchema)) {
-             // Add header actions if any (default stub doesn't have them usually, but we can append or inject if placeholder existed. 
-             // Since stub doesn't have it, we might need to inject it before ->columns or at end of table method.
-             // But wait, StubTable.php doesn't have headerActions placeholder. Let's assume user wants standard actions.
-             // For now, let's focus on Row Actions as requested by user "Table layout da Column filter action lar".
-        }
-
+        // Generate Header Actions (placeholder if we had one)
+        // StubBulkActions
+        $bulkActions = "\Filament\Actions\BulkActionGroup::make([\n                    \Filament\Actions\DeleteBulkAction::make(),\n                ]),";
+        $content = str_replace('StubBulkActions', $bulkActions, $content);
+        
         file_put_contents($tableFile, $content);
     }
 
@@ -393,7 +394,7 @@ class ModuleMakerService
                 ],
                 [
                     'Modules',
-                    $resourceName,
+                    $moduleName,
                     $modelName,
                     Str::plural($resourceName)
                 ],
@@ -845,27 +846,27 @@ class ModuleMakerService
                         $colBlocks = $gridItems[$i] ?? [];
                         if (empty($colBlocks)) {
                              // Empty column placeholder
-                             if ($type === 'split') {
+                            if ($type === 'split') {
                                  // specific section for split?
-                                 $colComponents[] = "\Filament\Forms\Components\Section::make([])"; 
+                                 $colComponents[] = "\Filament\Schemas\Components\Section::make([])"; 
                              } else {
-                                 $colComponents[] = "\Filament\Forms\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
+                                 $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
                              }
                              continue;
                         }
                         $colContent = $this->generateFormSchema($columns, $colBlocks);
                         
                         if ($type === 'split') {
-                            $colComponents[] = "\Filament\Forms\Components\Section::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])";
+                            $colComponents[] = "\Filament\Schemas\Components\Section::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])";
                         } else {
-                            $colComponents[] = "\Filament\Forms\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
+                            $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
                         }
                     }
                     
                     $gridContent = implode(",\n                        ", $colComponents);
                     
                     if ($type === 'split') {
-                         $components[] = "\Filament\Forms\Components\Split::make([\n                        {$gridContent}\n                    ])";
+                         $components[] = "\Filament\Schemas\Components\Split::make([\n                        {$gridContent}\n                    ])";
                     } else {
                          $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
                     }
@@ -917,23 +918,33 @@ class ModuleMakerService
         // Basic type mapping
         $field = "";
         
+        // Determine Label Syntax
+        $isTranslateLabel = $metadata['translate_label'] ?? false;
+        $labelStr = $isTranslateLabel ? "__('{$label}')" : "'{$label}'";
+
+        // Builder Helper for Label
+        // We replace generic ->label('...') with our dynamic one
+        $replaceLabel = function($str) use ($labelStr) {
+             return preg_replace("/->label\('.*?'\)/", "->label({$labelStr})", $str);
+        };
+
         switch ($type) {
             case 'boolean':
-                $field = "\Filament\Forms\Components\Toggle::make('{$name}')\n                    ->label('{$label}')";
+                $field = "\Filament\Forms\Components\Toggle::make('{$name}')\n                    ->label({$labelStr})";
                 break;
             case 'text':
             case 'mediumText':
             case 'longText':
             case 'json':
             case 'jsonb':
-                $field = "\Filament\Forms\Components\Textarea::make('{$name}')\n                    ->label('{$label}')";
+                $field = "\Filament\Forms\Components\Textarea::make('{$name}')\n                    ->label({$labelStr})";
                 break;
             case 'date':
-                $field = "\Filament\Forms\Components\DatePicker::make('{$name}')\n                    ->label('{$label}')";
+                $field = "\Filament\Forms\Components\DatePicker::make('{$name}')\n                    ->label({$labelStr})";
                 break;
             case 'datetime':
             case 'timestamp':
-                $field = "\Filament\Forms\Components\DateTimePicker::make('{$name}')\n                    ->label('{$label}')";
+                $field = "\Filament\Forms\Components\DateTimePicker::make('{$name}')\n                    ->label({$labelStr})";
                 break;
             case 'integer':
             case 'tinyInteger':
@@ -945,10 +956,10 @@ class ModuleMakerService
             case 'decimal':
             case 'float':
             case 'double':
-                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label('{$label}')\n                    ->numeric()";
+                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label({$labelStr})\n                    ->numeric()";
                 break;
             default:
-                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label('{$label}')";
+                $field = "\Filament\Forms\Components\TextInput::make('{$name}')\n                    ->label({$labelStr})";
                 break;
         }
 
@@ -1101,7 +1112,7 @@ class ModuleMakerService
 
         foreach ($builderBlocks['actions'] as $action) {
             $type = $action['type'] ?? 'EditAction';
-            $components[] = "\Filament\Tables\Actions\\{$type}::make()";
+            $components[] = "\Filament\Actions\\{$type}::make()";
         }
 
         return implode(",\n                ", $components);

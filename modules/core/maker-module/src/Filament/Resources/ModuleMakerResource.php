@@ -4,12 +4,13 @@ namespace Modules\MakerModule\Filament\Resources;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Forms\Components\Group;
+use Filament\Schemas\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Checkbox;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
@@ -222,21 +223,41 @@ class ModuleMakerResource extends Resource
 
                                     Grid::make(3)
                                         ->schema([
-                                            TextInput::make('model_label')
-                                                ->label(__('Model Label'))
-                                                ->placeholder('Product'),
-                                            TextInput::make('plural_model_label')
-                                                ->label(__('Plural Model Label'))
-                                                ->placeholder('Products'),
-                                            TextInput::make('navigation_label')
-                                                ->label(__('Navigation Label'))
-                                                ->placeholder('Products'),
+                                            Group::make([
+                                                TextInput::make('model_label')
+                                                    ->label(__('Model Label'))
+                                                    ->placeholder('Product'),
+                                                Checkbox::make('translate_model_label')
+                                                    ->label(__('Translate'))
+                                                    ->inline(false),
+                                            ]),
+                                            Group::make([
+                                                TextInput::make('plural_model_label')
+                                                    ->label(__('Plural Model Label'))
+                                                    ->placeholder('Products'),
+                                                Checkbox::make('translate_plural_model_label')
+                                                    ->label(__('Translate'))
+                                                    ->inline(false),
+                                            ]),
+                                            Group::make([
+                                                TextInput::make('navigation_label')
+                                                    ->label(__('Navigation Label'))
+                                                    ->placeholder('Products'),
+                                                Checkbox::make('translate_navigation_label')
+                                                    ->label(__('Translate'))
+                                                    ->inline(false),
+                                            ]),
                                             TextInput::make('navigation_icon')
                                                 ->label(__('Navigation Icon'))
                                                 ->default('heroicon-o-rectangle-stack'),
-                                            TextInput::make('navigation_group')
-                                                ->label(__('Navigation Group'))
-                                                ->placeholder('Shop'),
+                                            Group::make([
+                                                TextInput::make('navigation_group')
+                                                    ->label(__('Navigation Group'))
+                                                    ->placeholder('Shop'),
+                                                Checkbox::make('translate_navigation_group')
+                                                    ->label(__('Translate'))
+                                                    ->inline(false),
+                                            ]),
                                             TextInput::make('navigation_sort')
                                                 ->label(__('Sort Order'))
                                                 ->numeric()

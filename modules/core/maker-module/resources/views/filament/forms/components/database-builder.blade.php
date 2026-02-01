@@ -334,6 +334,12 @@
                                      <label style="display:flex; align-items:center; gap:5px; margin-bottom:5px; font-size:11px; color:#ddd; cursor:pointer;">
                                          <input type="checkbox" x-model="col.index"> Index
                                      </label>
+                                     
+                                     <div style="margin-bottom:5px;">
+                                         <label style="display:block; font-size:10px; color:#aaa; margin-bottom:2px;">Default Value</label>
+                                         <input type="text" x-model="col.default_value" class="db-input-dark" style="background:#222; border:1px solid #444; padding:2px 5px; font-size:10px; width:100%; border-radius:3px;" placeholder="NULL">
+                                     </div>
+
                                      <template x-if="['string', 'text', 'json'].includes(col.type)">
                                          <label style="display:flex; align-items:center; gap:5px; font-size:11px; color:#ddd; cursor:pointer;">
                                              <input type="checkbox" x-model="col.is_translatable"> Translatable
@@ -402,8 +408,13 @@
                              if(!table.ui_x) table.ui_x = 50 + (i * 300);
                              if(!table.ui_y) table.ui_y = 50 + (i * 50);
                              if(!table.columns) table.columns = [];
+                             if(!table.columns) table.columns = [];
                              // Remove ID if present in state (legacy fix)
                              table.columns = table.columns.filter(c => c.name !== 'id');
+                             // Ensure default_value exists
+                             table.columns.forEach(c => {
+                                 if(typeof c.default_value === 'undefined') c.default_value = '';
+                             });
                          });
 
                          // Defer line drawing until DOM is ready
@@ -438,7 +449,9 @@
                             nullable: false,
                             unique: false,
                             index: false,
+                            index: false,
                             is_translatable: false,
+                            default_value: '',
                             related_model: '', // Would need logic to guess from name
                             related_column: 'name'
                         });

@@ -27,10 +27,85 @@ class ModuleMakerService
         $commandName = $moduleGroup ? $moduleGroup . '/' . $moduleSlug : $moduleSlug;
         
         $tables = $data['tables'] ?? [];
-        // Extract layouts arrays
         $resourceLayouts = $data['resource_layouts'] ?? [];
         $tableLayouts = $data['table_layouts'] ?? [];
+        $wizardRelations = $data['relations'] ?? [];
         
+        // 1. Analyze Relations: Build a map of relations for every table
+        $compiledRelations = [];
+        $newMapTableNames = collect($tables)->pluck('name')->toArray(); // List of new tables
+
+        // Initialize map
+        foreach ($tables as $t) {
+            $compiledRelations[$t['name']] = [];
+        }
+
+        // Pass A: Auto-discovery from Foreign Keys
+        foreach ($tables as $table) {
+            $tableName = $table['name'];
+            foreach ($table['columns'] as $col) {
+                if (($col['type'] ?? '') === 'foreignId') {
+                    // It's a foreign key. 
+                    // 1. Add BelongsTo to *this* table.
+                    // (Note: createModelFile already handles this by iterating columns, but we can make it explicit if we want. 
+                    // Actually, createModelFile creates BelongsTo based on columns. We need to handle the INVERSE: HasMany.)
+                    
+                    // Identify Target Table
+                    $targetModel = $col['related_model'] ?? null;
+                    $targetTableName = null;
+
+                    if ($targetModel) {
+                        // If related_model is explicit
+                        // Check if it's one of our new tables
+                        if (in_array($targetModel, $newMapTableNames)) {
+                            $targetTableName = $targetModel;
+                        }
+                    } else {
+                        // Infer from column name (e.g. user_id -> users)
+                        // Simple pluralization guess
+                        $guessed = Str::plural(str_replace('_id', '', $col['name']));
+                        if (in_array($guessed, $newMapTableNames)) {
+                            $targetTableName = $guessed;
+                        }
+                    }
+
+                    // If we found a target table in this batch, add HasMany to it
+                    if ($targetTableName) {
+                        $compiledRelations[$targetTableName][] = [
+                            'type' => 'hasMany',
+                            'related_modal' => $tableName, // The child table
+                            'relation_name' => Str::camel(Str::plural($tableName)), // e.g. 'orders'
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Pass B: Wizard Relations (Explicit) + Reciprocals
+        foreach ($wizardRelations as $rel) {
+            $sourceTable = $rel['table_name'] ?? null;
+            $targetTableOrModel = $rel['related_modal'] ?? null;
+            $type = $rel['type'] ?? 'hasMany';
+            $pivot = $rel['pivot_table'] ?? null;
+
+             if ($sourceTable) {
+                // Add to Source
+                $compiledRelations[$sourceTable][] = $rel;
+
+                // Handle Reciprocal for BelongsToMany
+                // If Target is one of our new tables, add the inverse relation
+                // Logic: If I define "Product belongsToMany Category", then "Category" also "belongsToMany Product"
+                if ($type === 'belongsToMany' && in_array($targetTableOrModel, $newMapTableNames)) {
+                    $compiledRelations[$targetTableOrModel][] = [
+                        'type' => 'belongsToMany',
+                        'related_modal' => $sourceTable,
+                        'pivot_table' => $pivot,
+                        'relation_name' => Str::camel(Str::plural($sourceTable)), // e.g. synonyms
+                    ];
+                }
+            }
+        }
+
 
         $moduleModel = $this->createModule($pureName, $studlyModuleName, $commandName, $tables);
 
@@ -69,12 +144,21 @@ class ModuleMakerService
                 
                 $columnsForMigration = $columnsAssociative; // Pass full data to support modifiers
 
-                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
-                $this->createMigrationFile($commandName, $tableName, $columnsForMigration); 
-                $this->createModelFile($commandName, $studlyModuleName, $tableName, $columnsAssociative, $softDeletes, $table);
+                $this->createMigrationFile($commandName, $tableName, $columnsForMigration, $table);
+                
+                // Only create model for standard tables
+                if (($table['type'] ?? 'standard') !== 'pivot') {
+                    // Extract detected/wizard relations for this specific table
+                    $tableRelations = $compiledRelations[$tableName] ?? [];
+                    // We might need to handle duplicates in tableRelations?
+                    // Dedupe by relation_name to avoid conflicts
+                    $tableRelations = collect($tableRelations)->unique('relation_name')->toArray();
+
+                    $this->createModelFile($commandName, $studlyModuleName, $tableName, $columnsAssociative, $softDeletes, $table, $tableRelations);
+                }
 
                 // Add Filament Resource creation if has_resource is true
-                if ($table['has_resource'] ?? false) {
+                if (($table['has_resource'] ?? false) && ($table['type'] ?? 'standard') !== 'pivot') {
                     // Find layout for this table
                     $tableLayout = collect($resourceLayouts)->firstWhere('table_name', $tableName) ?? [];
 
@@ -420,7 +504,7 @@ class ModuleMakerService
         return array_combine(array_keys($columns), array_values($columns));
     }
 
-    public function createMigrationFile($commandName, $tableName, $columns)
+    public function createMigrationFile($commandName, $tableName, $columns, $tableData = [])
     {
         $migrationName = 'create_' . Str::plural($tableName) . '_table';
         $migrationFileName = now()->format('Y_m_d_His') . '_' . $migrationName . '.php';
@@ -469,16 +553,41 @@ class ModuleMakerService
                 if (!empty($props['index'])) {
                     $def .= "->index()";
                 }
+                
+                // Add Default Value
+                if (isset($props['default_value']) && $props['default_value'] !== '') {
+                    $val = $props['default_value'];
+                    if (strtolower($val) === 'null') {
+                        $def .= "->default(null)";
+                    } elseif (strtolower($val) === 'true') {
+                        $def .= "->default(true)";
+                    } elseif (strtolower($val) === 'false') {
+                         $def .= "->default(false)";
+                    } elseif (is_numeric($val)) {
+                        $def .= "->default({$val})";
+                    } else {
+                        // String value
+                        $def .= "->default('{$val}')";
+                    }
+                }
 
                 return "            {$def};";
             })
             ->implode("\n");
+            
         $migrationFileContent = str_replace(array('StubModuleName', '//columns'), array(Str::plural($tableName), $columnsContent), $stub);
+        
+        // Pivot Table Adjustments: Remove ID and Timestamps
+        if (($tableData['type'] ?? 'standard') === 'pivot') {
+            $migrationFileContent = str_replace('$table->id();', '', $migrationFileContent);
+            $migrationFileContent = str_replace('$table->timestamps();', '', $migrationFileContent);
+        }
+
         $migrationFileContent = preg_replace('/\n\s*\n/', "\n", $migrationFileContent);
         file_put_contents($migrationFile, $migrationFileContent);
     }
 
-    public function createModelFile($commandName, $moduleName, $tableName, $columns, $softDeletes = false, $tableData = [])
+    public function createModelFile($commandName, $moduleName, $tableName, $columns, $softDeletes = false, $tableData = [], $relations = [])
     {
         $modelName = Str::studly(Str::singular($tableName));
         $policyClass = $modelName . 'Policy';
@@ -498,7 +607,7 @@ class ModuleMakerService
 
         $modelFileContent = str_replace(
             ['StubModuleNamespace', 'StubSubModulePrefix', 'StubTableName', 'fillables', 'table_name', 'StubPolicyClass', 'useSoftDeletes'],
-            ['Modules', $modelName, $modelName, implode("',\n        '", array_keys($columns)), Str::plural($tableName), $policyClass, $softDeletesTrait],
+            ['Modules', $moduleName, $modelName, implode("',\n        '", array_keys($columns)), Str::plural($tableName), $policyClass, $softDeletesTrait],
             $stub
         );
 
@@ -579,6 +688,56 @@ class ModuleMakerService
                 }
             }
         }
+
+        // Custom Relations from Wizard
+        foreach ($relations as $relation) {
+            if (($relation['table_name'] ?? '') !== $tableName) {
+                continue;
+            }
+
+            $type = $relation['type'];
+            $related = $relation['related_modal']; // Can be FQCN or Table Name
+            $pivot = $relation['pivot_table'] ?? null;
+            $methodName = $relation['relation_name'] ?? null;
+
+            // Resolve Related Class
+            if (str_contains($related, '\\')) {
+                $relatedClass = "\\{$related}";
+                $relatedShortName = class_basename($related);
+            } else {
+                // It's a table name from our new module
+                $relatedShortName = Str::studly(Str::singular($related));
+                
+                // Check if the related model is likely in the same module (Standard behavior)
+                // We assume it is in the same namespace unless we have info otherwise.
+                // However, if the user explicitly wants to ensure consistent namespace:
+                // We'll produce just the ClassName if it's local, or FQCN if external.
+                // Since we are building this module right now, use the module namespace.
+                
+                $relatedClass = "{$relatedShortName}";
+                // No FQCN prefix needed if in same directory/namespace
+            }
+
+            // Generate Method Name if missing
+            if (empty($methodName)) {
+                if ($type === 'hasOne') {
+                    $methodName = Str::camel($relatedShortName);
+                } else {
+                    $methodName = Str::camel(Str::plural($relatedShortName));
+                }
+            }
+
+            // Generate Code
+            if ($type === 'belongsToMany' && $pivot) {
+                 // Assuming Pivot Model Name is StudlySingular or we use table name
+                 $pivotTable = $pivot;
+                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\BelongsToMany\n    {\n        return \$this->belongsToMany({$relatedClass}::class, '{$pivotTable}');\n    }\n";
+            } elseif ($type === 'hasMany') {
+                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasMany\n    {\n        return \$this->hasMany({$relatedClass}::class);\n    }\n";
+            } elseif ($type === 'hasOne') {
+                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasOne\n    {\n        return \$this->hasOne({$relatedClass}::class);\n    }\n";
+            }
+        }
         
         // Helper to check if column exists
         $hasColumn = fn($name) => collect($columns)->contains(fn($c) => ($c['name'] ?? null) === $name || $c === $name);
@@ -650,7 +809,7 @@ class ModuleMakerService
             ],
             [
                 'Modules',
-                $modelName,
+                $moduleName,
                 $modelName,
                 $permissionName
             ],

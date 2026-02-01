@@ -109,6 +109,82 @@ class ModuleMakerResource extends Resource
                                     'availableModels' => $service->getAvailableModels(),
                                     'dataTypes' => $service->getDataTypes(null),
                                 ])
+                        ->columnSpanFull(),
+                        ]),
+
+                    Wizard\Step::make(__('Relations'))
+                        ->description(__('Define model relationships'))
+                        ->icon('heroicon-o-arrows-right-left')
+                        ->schema([
+                            Repeater::make('relations')
+                                ->label(__('Model Relations'))
+                                ->helperText(__('Define HasOne, HasMany, and BelongsToMany relationships between your tables.'))
+                                ->schema([
+                                    Grid::make(2)
+                                        ->schema([
+                                            Select::make('table_name')
+                                                ->label(__('Source Model'))
+                                                ->options(function (Get $get) {
+                                                    $tables = $get('../../tables') ?? $get('tables') ?? [];
+                                                    return collect($tables)
+                                                        ->filter(fn($t) => ($t['type'] ?? 'standard') === 'standard')
+                                                        ->pluck('name', 'name');
+                                                })
+                                                ->required()
+                                                ->live(),
+
+                                            Select::make('type')
+                                                ->label(__('Relation Type'))
+                                                ->options([
+                                                    'hasOne' => 'HasOne',
+                                                    'hasMany' => 'HasMany',
+                                                    'belongsToMany' => 'BelongsToMany',
+                                                ])
+                                                ->required()
+                                                ->live(),
+
+                                            Select::make('related_modal')
+                                                ->label(__('Related Model'))
+                                                ->options(function (Get $get) use ($service) {
+                                                    $tables = $get('../../tables') ?? $get('tables') ?? [];
+                                                    
+                                                    // Canvas Tables
+                                                    $canvasTables = collect($tables)
+                                                        ->filter(fn($t) => !empty($t['name']))
+                                                        ->mapWithKeys(fn($t) => [$t['name'] => $t['name'] . ' (New)'])
+                                                        ->toArray();
+                                                        
+                                                    // System Models
+                                                    $systemModels = [];
+                                                    foreach ($service->getAvailableModels() as $group => $models) {
+                                                        foreach ($models as $class => $name) {
+                                                            $systemModels[$class] = $group . ' - ' . $name;
+                                                        }
+                                                    }
+                                                    
+                                                    return $canvasTables + $systemModels;
+                                                })
+                                                ->required()
+                                                ->searchable(),
+
+                                            Select::make('pivot_table')
+                                                ->label(__('Pivot Table'))
+                                                ->options(function (Get $get) {
+                                                    $tables = $get('../../tables') ?? $get('tables') ?? [];
+                                                    return collect($tables)
+                                                        ->filter(fn($t) => ($t['type'] ?? 'standard') === 'pivot')
+                                                        ->pluck('name', 'name');
+                                                })
+                                                ->visible(fn(Get $get) => $get('type') === 'belongsToMany')
+                                                ->required(fn(Get $get) => $get('type') === 'belongsToMany'),
+                                                
+                                            TextInput::make('relation_name')
+                                                ->label(__('Relation Name'))
+                                                ->placeholder('e.g. posts, roles')
+                                                ->helperText(__('Method name in the model. Leave empty to auto-generate.'))
+                                        ]),
+                                ])
+                                ->addActionLabel(__('Add Relation'))
                                 ->columnSpanFull(),
                         ]),
 

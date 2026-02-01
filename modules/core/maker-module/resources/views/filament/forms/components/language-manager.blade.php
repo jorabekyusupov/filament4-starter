@@ -2,6 +2,7 @@
     :component="$getFieldWrapperView()"
     :field="$field"
 >
+    <div>
     <style>
         .lm-grid {
             display: grid;
@@ -208,7 +209,10 @@
                                     }
 
                                     if (schema && Array.isArray(schema.columns)) {
-                                         schema.columns.forEach(c => add(c.label));
+                                         schema.columns.forEach(c => {
+                                             if (c.is_label_translated && c.label) add(c.label);
+                                             if (c.is_tooltip_translated && c.tooltip) add(c.tooltip);
+                                         });
                                     }
                                     if (schema && Array.isArray(schema.filters)) {
                                          schema.filters.forEach(f => {
@@ -248,4 +252,5 @@
             }
         })();
     </script>
+    </div>
 </x-dynamic-component>

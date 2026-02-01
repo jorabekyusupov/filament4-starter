@@ -2,12 +2,14 @@
     :component="$getFieldWrapperView()"
     :field="$field"
 >
+    <div>
     <!-- Load FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         /* --- GLOBAL & VARIABLES --- */
-        .table-builder-wrapper {
+        /* --- GLOBAL & VARIABLES --- */
+        .table-builder-wrapper, .tb-modal-context {
             --bg-body: #f8fafc;
             --border-color: #e2e8f0;
             --primary: #d97706; /* Filament Amber */
@@ -18,17 +20,20 @@
             --bg-item: #ffffff;
             
             font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--text-main);
+      
+        }
+
+        .table-builder-wrapper {
             background-color: var(--bg-body);
             height: 850px;
             display: flex;
-            overflow: hidden;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: var(--text-main);
         }
 
         /* DARK MODE */
-        :is(.dark .table-builder-wrapper) {
+        :is(.dark .table-builder-wrapper), :is(.dark .tb-modal-context) {
             --bg-body: #25293c; /* theme.css --dark-bg-color */
             --border-color: #4b5563;
             --text-main: #e2e8f0;
@@ -243,41 +248,37 @@
                     <template x-for="(item, index) in state.columns" :key="index">
                         <div class="tb-comp-wrapper">
                             <div class="item-icon"><i :class="item.icon || 'fas fa-columns'"></i></div>
-                            <div>
+                            <div style="flex: 1;">
                                 <div class="item-label" x-text="item.label || item.name"></div>
                                 <div class="item-type" x-text="item.type"></div>
                                 
-                                <!-- Extended Configuration -->
-                                <div style="margin-top: 5px; font-size: 11px; display: flex; flex-direction: column; gap: 3px;">
-                                    <!-- Translatable (For json/text OR foreignId relations) -->
-                                    <template x-if="['json', 'jsonb', 'text', 'longText'].includes(item.dbType) || item.dbType === 'foreignId' || item.name.endsWith('_id')">
-                                        <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
-                                            <input type="checkbox" x-model="item.is_translatable"> <span x-text="(item.dbType === 'foreignId' || item.name.endsWith('_id')) ? 'Rel. Translatable' : 'Translatable'"></span>
-                                        </label>
-                                    </template>
-                                    
-                                    <!-- Related Column (For manual foreign key mapping) -->
-                                     <template x-if="item.dbType === 'foreignId' || item.name.endsWith('_id')">
-                                        <div style="display:flex; align-items:center; gap:4px;">
-                                           <span style="opacity:0.7">Rel. Col:</span>
-                                           <input type="text" x-model="item.related_column" placeholder="name" style="border:1px solid var(--border-color); border-radius:3px; padding:1px 4px; font-size:10px; width: 60px;">
-                                        </div>
-                                    </template>
+                                <div style="font-size: 10px; color: var(--text-muted); margin-top:2px;">
+                                    <span x-show="item.sortable" style="margin-right:4px;">Sortable</span>
+                                    <span x-show="item.searchable" style="margin-right:4px;">Searchable</span>
+                                    <span x-show="item.is_label_translated" style="margin-right:4px;">(Transulated Label)</span>
                                 </div>
                             </div>
-                            <div style="margin-left: auto; display: flex; gap: 5px;">
-                                <input type="checkbox" x-model="item.sortable" title="Sortable"> <span style="font-size:10px; color:var(--text-muted)">Sort</span>
-                                <input type="checkbox" x-model="item.searchable" title="Searchable"> <span style="font-size:10px; color:var(--text-muted)">Search</span>
-                            </div>
-                            <div class="delete-btn" @click="state.columns.splice(index, 1)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            
+                            <div style="display: flex; gap: 5px; margin-left: auto;">
+                                <div class="db-action-btn" @click="editColumn(index)" title="Settings" style="cursor:pointer; color:#666;">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                <div class="delete-btn" @click="state.columns.splice(index, 1)" style="position:static; transform:none;">
+                                    <i class="fas fa-trash"></i>
+                                </div>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
 
-            <!-- FILTERS ZONE -->
+            <!-- ACTIONS ZONE -->
+            <!-- ... (Kept as is, but ensuring we don't break structure) ... -->
+
+
+
+
+
             <div class="tb-drop-zone-container">
                 <div class="tb-drop-zone-title">Filters</div>
                 <div class="tb-drop-zone"
@@ -371,6 +372,90 @@
             </div>
 
         </div>
+        
+        <!-- MODAL (Overlay) -->
+            <div x-show="editingColumn !== null" 
+                 class="tb-modal-context"
+                 style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important;"
+                 x-transition.opacity
+               
+            >
+                <div @click.outside="closeModal()" 
+                     style="background: var(--bg-item); width: 400px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); display: flex; flex-direction: column;"
+                     x-show="editingColumn !== null"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 scale-90"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-90"
+                >
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-weight: bold; font-size: 14px;">Column Settings</h3>
+                        <div @click="closeModal()" style="cursor: pointer; padding: 5px; opacity: 0.7; transition: opacity 0.2s;"><i class="fas fa-times"></i></div>
+                    </div>
+                    
+                    <div style="padding: 20px; overflow-y: auto; max-height: 500px;">
+                        
+                        <template x-if="editingColumn !== null && state.columns[editingColumn]">
+                            <div>
+                                <!-- Label -->
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">Label</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" x-model="state.columns[editingColumn].label" class="db-input-dark" style="background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; flex: 1; font-size: 13px;">
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; user-select: none;">
+                                            <input type="checkbox" x-model="state.columns[editingColumn].is_label_translated" style="accent-color: var(--primary);"> Translate
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Tooltip -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform:uppercase; letter-spacing:0.5px;">Tooltip</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" x-model="state.columns[editingColumn].tooltip" class="db-input-dark" style="background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; flex: 1; font-size: 13px;">
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; user-select: none;">
+                                            <input type="checkbox" x-model="state.columns[editingColumn].is_tooltip_translated" style="accent-color: var(--primary);"> Translate
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div style="height: 1px; background: var(--border-color); margin-bottom: 20px;"></div>
+
+                                <!-- Boolean Toggles -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" x-model="state.columns[editingColumn].sortable" style="accent-color: var(--primary);"> Sortable
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" x-model="state.columns[editingColumn].searchable" style="accent-color: var(--primary);"> Searchable
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" x-model="state.columns[editingColumn].toggleable" style="accent-color: var(--primary);"> Toggleable
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" x-model="state.columns[editingColumn].wrap" style="accent-color: var(--primary);"> Wrap Text
+                                    </label>
+                                </div>
+
+                                <!-- Extra Features based on type -->
+                                <template x-if="['TextColumn'].includes(state.columns[editingColumn].type)">
+                                    <div style="margin-top: 20px; margin-bottom: 5px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                                            <input type="checkbox" x-model="state.columns[editingColumn].copyable" style="accent-color: var(--primary);"> Copyable
+                                        </label>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); text-align: right; background: rgba(0,0,0,0.02);">
+                        <button @click="closeModal()" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity 0.2s;">Done</button>
+                    </div>
+                </div>
+            </div>
     </div>
 
     <script>
@@ -386,9 +471,9 @@
                 Alpine.data('tableBuilder', ({ state, columns }) => ({
                     state: state,
                     columns: columns,
-                    draggedType: null,
                     draggedData: null,
                     draggingOver: null, // 'columns', 'filters', 'actions', 'header_actions'
+                    editingColumn: null,
 
                     init() {
                          if (!this.state || typeof this.state !== 'object') {
@@ -404,6 +489,14 @@
                          if(!this.state.filters) this.state.filters = [];
                          if(!this.state.actions) this.state.actions = [];
                          if(!this.state.header_actions) this.state.header_actions = [];
+                    },
+
+                    editColumn(index) {
+                        this.editingColumn = index;
+                    },
+
+                    closeModal() {
+                        this.editingColumn = null;
                     },
 
                     dragStart(e, type, data = null) {
@@ -431,6 +524,12 @@
                                 sortable: true,
                                 searchable: true,
                                 is_translatable: false,
+                                is_label_translated: false,
+                                is_tooltip_translated: false,
+                                tooltip: '',
+                                toggleable: false,
+                                wrap: false,
+                                copyable: false,
                                 related_column: 'name' // Default for relations
                             };
                         } else if (this.draggedType === 'column_type' && zone === 'columns') {
@@ -440,7 +539,13 @@
                                 type: this.draggedData.type,
                                 icon: this.draggedData.icon,
                                 sortable: true,
-                                searchable: true
+                                searchable: true,
+                                is_label_translated: false,
+                                is_tooltip_translated: false,
+                                tooltip: '',
+                                toggleable: false,
+                                wrap: false,
+                                copyable: false
                             };
                         } else if (this.draggedType === 'action' && (zone === 'actions' || zone === 'header_actions')) {
                              item = {
@@ -471,4 +576,5 @@
             registerConfig();
         })();
     </script>
+    </div>
 </x-dynamic-component>

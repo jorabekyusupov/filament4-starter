@@ -1158,8 +1158,19 @@ class ModuleMakerService
         foreach ($builderBlocks['columns'] as $col) {
              $name = $col['name'];
              $label = $col['label'] ?? Str::headline($name);
+             $labelStr = ($col['is_label_translated'] ?? false) ? "__('{$label}')" : "'{$label}'";
+
              $isSortable = $col['sortable'] ?? false ? '->sortable()' : '';
              $isSearchable = $col['searchable'] ?? false ? '->searchable()' : '';
+             $isToggleable = $col['toggleable'] ?? false ? '->toggleable()' : '';
+             $isWrap = $col['wrap'] ?? false ? '->wrap()' : '';
+             $isCopyable = $col['copyable'] ?? false ? '->copyable()' : '';
+             
+             $tooltip = '';
+             if (!empty($col['tooltip'])) {
+                 $tooltipStr = ($col['is_tooltip_translated'] ?? false) ? "__('{$col['tooltip']}')" : "'{$col['tooltip']}'";
+                 $tooltip = "->tooltip({$tooltipStr})";
+             }
              
              // Advanced Features
              $isTranslatable = $col['is_translatable'] ?? false;
@@ -1184,7 +1195,7 @@ class ModuleMakerService
              }
 
              $type = $col['type'] ?? 'TextColumn';
-             $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label('{$label}'){$isSortable}{$isSearchable}";
+             $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label({$labelStr}){$isSortable}{$isSearchable}{$isToggleable}{$isWrap}{$isCopyable}{$tooltip}";
              
              $components[] = $cmp;
         }

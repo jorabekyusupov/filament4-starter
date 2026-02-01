@@ -62,8 +62,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'photo_mime',
         'photo_path',
         'tg_id',
-        'dont_touch',
-        'candidate_user_id'
+        'dont_touch'
     ];
 
     /**

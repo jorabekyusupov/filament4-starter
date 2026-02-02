@@ -4,16 +4,16 @@
     "version": "1.0.0",
     "autoload": {
         "psr-4": {
-            "Modules\\MakerModule\\": "maker-module/src",
-            "Modules\\User\\": "user/src",
-            "Modules\\Language\\": "language/src",
-            "Modules\\Organization\\": "organization/src",
-            "Modules\\Application\\": "application/src",
-            "Modules\\Translate\\": "translate/src",
-            "Modules\\RolePermission\\": "role-permission/src",
             "Modules\\App\\": "app/src",
+            "Modules\\User\\": "user/src",
+            "Modules\\Setting\\": "setting/src",
+            "Modules\\Language\\": "language/src",
+            "Modules\\Translate\\": "translate/src",
+            "Modules\\Application\\": "application/src",
             "Modules\\ActivityLog\\": "activity-log/src",
-            "Modules\\Setting\\": "setting/src"
+            "Modules\\MakerModule\\": "maker-module/src",
+            "Modules\\Organization\\": "organization/src",
+            "Modules\\RolePermission\\": "role-permission/src"
         }
     },
     "minimum-stability": "stable",
@@ -21,16 +21,16 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
-                "Modules\\Language\\Providers\\LanguageServiceProvider",
-                "Modules\\User\\Providers\\UserServiceProvider",
-                "Modules\\Organization\\Providers\\OrganizationServiceProvider",
-                "Modules\\Application\\Providers\\ApplicationServiceProvider",
-                "Modules\\Translate\\Providers\\TranslateServiceProvider",
-                "Modules\\RolePermission\\Providers\\RolePermissionServiceProvider",
                 "Modules\\App\\Providers\\AppServiceProvider",
+                "Modules\\User\\Providers\\UserServiceProvider",
+                "Modules\\Setting\\Providers\\SettingServiceProvider",
+                "Modules\\Language\\Providers\\LanguageServiceProvider",
+                "Modules\\Translate\\Providers\\TranslateServiceProvider",
+                "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
+                "Modules\\Application\\Providers\\ApplicationServiceProvider",
                 "Modules\\ActivityLog\\Providers\\ActivityLogServiceProvider",
-                "Modules\\Setting\\Providers\\SettingServiceProvider"
+                "Modules\\Organization\\Providers\\OrganizationServiceProvider",
+                "Modules\\RolePermission\\Providers\\RolePermissionServiceProvider"
             ]
         }
     }

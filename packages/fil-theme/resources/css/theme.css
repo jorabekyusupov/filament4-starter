@@ -5,6 +5,17 @@
 @source '../../../../modules/**/resources/views/filament/resources/**/*';
 @source '../../../../modules/**/resources/views/filament/pages/**/*';
 @source '../../../../modules/**/resources/views/filament/widgets/**/*';
+
+@theme {
+    --color-primary: var(--primary-200);
+    --color-link: var(--bs-link-color);
+    --color-link-hover: var(--bs-link-hover-color);
+    --color-body: var(--bs-body-color);
+    --color-dark-bg: var(--dark-bg-color);
+    --color-dark-card: var(--dark-card-bg-color);
+    --radius-base: var(--border-radius);
+}
+
 :root {
     --border-radius: 12px;
     --dark-bg-color: #25293c;

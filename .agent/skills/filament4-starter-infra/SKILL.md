@@ -59,6 +59,7 @@ description: "Use when working on /Users/yusupov/Herd/filament4-starter for proj
 - Prefer Tailwind utility classes in views/components; only add CSS when necessary.
 - When styling Filament custom pages/components, use tokens mapped in `packages/fil-theme/resources/css/theme.css`.
 - Avoid introducing new styling systems.
+- When using Filament classes/components, import namespaces according to the current package structure under `vendor/filament/filament` (do not guess old namespaces).
 - Always extend base classes from `Modules\App\` when available (BaseModel, BaseDTO, BaseReadRepository, BaseWriteRepository, BaseServiceProvider, BasePolicy, Controller, BaseService).
 - Follow SOLID principles strictly (see `references/solid.md`).
 - Follow OOP principles strictly (see `references/oop.md`).

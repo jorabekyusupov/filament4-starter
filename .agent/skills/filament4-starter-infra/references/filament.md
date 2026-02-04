@@ -66,3 +66,9 @@ Use these Tailwind classes:
 - Prefer Tailwind utilities for layout and spacing.
 - Only add custom CSS if Tailwind cannot express it.
 - Keep styles consistent with theme tokens defined in `theme.css`.
+
+## Namespace rule (must follow)
+
+- When using Filament resources/pages/forms/tables/infolists/actions/components, use namespaces from the currently installed Filament package under `vendor/filament/filament`.
+- Do not rely on outdated imports from older Filament versions.
+- If unsure, check existing project usage first (e.g. `modules/core/application/src/Filament/Resources/Applications/*`) and then confirm against `vendor/filament/filament`.

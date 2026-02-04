@@ -15,5 +15,6 @@
     "only_latins_characters_allowed": "Разрешены только латинские символы",
     "roles_administration": "Администрирование ролей",
     "roles" : "Роли",
-    "role" : "Роль"
+    "role" : "Роль",
+    "permissions_count": "Количество разрешений"
 }

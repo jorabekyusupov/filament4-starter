@@ -7,5 +7,6 @@
   "email": "Электронная почта",
   "pinfl": "ПИНФЛ",
   "middle_name": "Отчество",
-  "password": "Пароль"
+  "password": "Пароль",
+  "password_confirmation": "Подтверждение пароля"
 }

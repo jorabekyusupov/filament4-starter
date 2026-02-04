@@ -12,5 +12,6 @@
   "Change Order (Swipe)": "Изменить порядок",
   "name_unique": "Уникальный название",
   "settings": "Настройки",
-  "applications": "Подключаемые приложения"
+  "applications": "Подключаемые приложения",
+  "created_at": "Дата создания"
 }

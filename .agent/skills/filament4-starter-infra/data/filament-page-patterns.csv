@@ -1,0 +1,5 @@
+No,Page Type,Header Actions,Body Layout,Permissions,Notes
+1,List Page,CreateAction,Table or grid,Use FilamentShield or hasSuperAdmin,Match ListApplications pattern
+2,Create Page,None or custom actions,Form schema,Check create permission,Use BaseModel validation
+3,Edit Page,DeleteAction + custom,Form + infolist,Check edit/delete permission,Match EditApplication
+4,Custom Page,Custom actions,Blade view with Tailwind,Use HasPageShield when protected,Use theme tokens

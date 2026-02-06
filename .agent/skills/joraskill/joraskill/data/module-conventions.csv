@@ -1,0 +1,8 @@
+No,Topic,Rule,Example
+1,BaseModel,All module models must extend Modules\\App\\Models\\BaseModel,Modules\\User\\Models\\User extends BaseModel
+2,BaseServiceProvider,Use BaseServiceProvider and set $this->name in boot(),Modules\\User\\Providers\\UserServiceProvider
+3,Module folder,Module lives under modules/core/<module>,modules/core/user
+4,Routes,Module routes live in routes/route.php,modules/core/user/routes/route.php
+5,Config,Module config stored in config/config.php,modules/core/user/config/config.php
+6,Translations,Use lang/ for translations,modules/core/user/lang
+7,Filament,Put Filament resources/pages in src/Filament,modules/core/application/src/Filament

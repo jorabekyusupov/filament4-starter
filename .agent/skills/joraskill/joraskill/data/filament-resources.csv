@@ -1,0 +1,4 @@
+No,Resource Pattern,Folder Layout,Pages,Schemas,Tables,Notes
+1,Applications style,"Resources/<ResourceName>/ (Resource.php + Pages + Schemas + Tables)",List/Create/Edit,Form/Infolist,Table,Match modules/core/application structure
+2,Simple Resource,"Resources/<ResourceName>/ (Resource.php + Pages + Schemas)",List/Create/Edit,Form/Infolist,,Use when table config is minimal
+3,Read-only Resource,"Resources/<ResourceName>/ (Resource.php + Pages + Schemas + Tables)",List/Edit,Infolist,Table,Disable create action

@@ -43,7 +43,9 @@ Use `modules/core/user` as a reference when extending structure.
 - Do: use `BaseReadRepository` / `BaseWriteRepository` and interfaces for repositories.
 - Do: use `BaseServiceProvider` and set `$this->name` in `boot()`.
 - Do: use module base `Controller` and `BasePolicy` when applicable.
+- Do: place all visual/UI strings in module JSON translations (`modules/<module>/lang/<locale>.json`).
 - Don't: extend raw `Model` or `ServiceProvider` in module code unless there is a strong reason.
+- Don't: hardcode UI text in Filament or Blade.
 
 ## Service provider pattern
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BM25 search across filament4-starter-infra CSV datasets."""
+"""BM25 search across joraskill CSV datasets."""
 
 from __future__ import annotations
 
@@ -107,7 +107,7 @@ def search_file(path: Path, query: str, max_results: int) -> list[tuple[dict, fl
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="BM25 search across filament4-starter-infra datasets.")
+    parser = argparse.ArgumentParser(description="BM25 search across joraskill datasets.")
     parser.add_argument("query", help="Search query")
     parser.add_argument("--file", choices=FILES.keys(), help="Search specific dataset")
     parser.add_argument("--max-results", "-n", type=int, default=5)

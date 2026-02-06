@@ -67,6 +67,29 @@ Use these Tailwind classes:
 - Only add custom CSS if Tailwind cannot express it.
 - Keep styles consistent with theme tokens defined in `theme.css`.
 
+## UI Text Localization (JSON only, must follow)
+
+All user-visible strings must be translated via module JSON files in `modules/<module>/lang/<locale>.json`.
+Never hardcode UI text in Filament resources/pages/widgets or Blade views.
+
+### Visual text (must be translated)
+
+- Page/resource titles and navigation labels
+- Section titles and descriptions
+- Form labels, placeholders, helper text
+- Table column labels, filter labels
+- Action labels, modal titles, button text
+- Empty state text and hints
+- Validation error messages shown in UI
+- Notification/toast titles and bodies
+- Infolist labels and descriptions
+- Widget titles and captions
+
+### Not considered UI text
+
+- Internal keys or identifiers (e.g. `slug`, `permission` keys)
+- Non-user-facing logs or debug strings
+
 ## Namespace rule (must follow)
 
 - When using Filament resources/pages/forms/tables/infolists/actions/components, use namespaces from the currently installed Filament package under `vendor/filament/filament`.

@@ -13,7 +13,7 @@ class ModuleMakerService
     public function create(array $data): Module
     {
         $moduleNameArr = explode('/', $data['name']);
-        
+
         if (count($moduleNameArr) > 1) {
             [$moduleGroup, $pureName] = $moduleNameArr;
         } else {
@@ -23,14 +23,14 @@ class ModuleMakerService
 
         $moduleSlug = Str::slug($pureName);
         $studlyModuleName = Str::studly($pureName);
-        
+
         $commandName = $moduleGroup ? $moduleGroup . '/' . $moduleSlug : $moduleSlug;
-        
+
         $tables = $data['tables'] ?? [];
         $resourceLayouts = $data['resource_layouts'] ?? [];
         $tableLayouts = $data['table_layouts'] ?? [];
         $wizardRelations = $data['relations'] ?? [];
-        
+
         // 1. Analyze Relations: Build a map of relations for every table
         $compiledRelations = [];
         $newMapTableNames = collect($tables)->pluck('name')->toArray(); // List of new tables
@@ -49,7 +49,7 @@ class ModuleMakerService
                     // 1. Add BelongsTo to *this* table.
                     // (Note: createModelFile already handles this by iterating columns, but we can make it explicit if we want. 
                     // Actually, createModelFile creates BelongsTo based on columns. We need to handle the INVERSE: HasMany.)
-                    
+
                     // Identify Target Table
                     $targetModel = $col['related_model'] ?? null;
                     $targetTableName = null;
@@ -88,7 +88,7 @@ class ModuleMakerService
             $type = $rel['type'] ?? 'hasMany';
             $pivot = $rel['pivot_table'] ?? null;
 
-             if ($sourceTable) {
+            if ($sourceTable) {
                 // Add to Source
                 $compiledRelations[$sourceTable][] = $rel;
 
@@ -120,17 +120,17 @@ class ModuleMakerService
                     'status' => $table['status'] ?? true,
                     'user_id' => auth()->id(),
                 ]);
-                
+
                 $softDeletes = $table['soft_deletes'] ?? false;
                 $logged = $table['logged'] ?? false;
                 $status = $table['status'] ?? true;
-                
+
                 $columns = array_merge(
                     $columns,
                     $softDeletes ? [['name' => 'deleted_at', 'type' => 'softDeletes']] : [],
                     $logged ? array_merge(
-                        [['name' => 'created_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true], 
-                         ['name' => 'updated_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true]],
+                        [['name' => 'created_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true],
+                            ['name' => 'updated_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true]],
                         $softDeletes ? [['name' => 'deleted_by', 'type' => 'unsignedBigInteger', 'nullable' => true, 'index' => true]] : []
                     ) : [],
                     $status ? [['name' => 'status', 'type' => 'boolean']] : []
@@ -141,11 +141,11 @@ class ModuleMakerService
                 foreach ($columns as $col) {
                     $columnsAssociative[$col['name']] = $col;
                 }
-                
+
                 $columnsForMigration = $columnsAssociative; // Pass full data to support modifiers
 
                 $this->createMigrationFile($commandName, $tableName, $columnsForMigration, $table);
-                
+
                 // Only create model for standard tables
                 if (($table['type'] ?? 'standard') !== 'pivot') {
                     // Extract detected/wizard relations for this specific table
@@ -188,7 +188,7 @@ class ModuleMakerService
                             'foreign' => isset($col['related_model']),
                             'foreign_table' => $col['related_model'] ?? null, // storing model here for reference, or table name if we had it
                             'foreign_column' => $col['related_column'] ?? null,
-                            
+
                             'options' => json_encode($col),
                             'module_id' => $moduleModel->id,
                             'status' => true,
@@ -198,7 +198,7 @@ class ModuleMakerService
 
             }
         }
-        
+
         return $moduleModel;
     }
 
@@ -209,18 +209,18 @@ class ModuleMakerService
             '--accept-default-namespace' => true,
         ]);
         $dataJson = module_path('core/maker-module/data/data.json');
-        
+
         // Ensure directory exists if creating for the first time
         if (!file_exists($dataJson)) {
             $dir = dirname($dataJson);
             if (!is_dir($dir)) {
-                 mkdir($dir, 0755, true);
+                mkdir($dir, 0755, true);
             }
             file_put_contents($dataJson, '[]');
         }
 
         $currentData = json_decode(file_get_contents($dataJson), true, 512, JSON_THROW_ON_ERROR);
-        
+
         // Prepare tables data for persistence
         $tablesData = [];
         foreach ($tables as $table) {
@@ -232,7 +232,7 @@ class ModuleMakerService
                     'options' => $column, // Store full metadata including related_model etc.
                 ];
             }
-            
+
             $tablesData[] = [
                 'name' => $table['name'],
                 'soft_deletes' => $table['soft_deletes'] ?? false,
@@ -245,6 +245,7 @@ class ModuleMakerService
         $newItem = [
             'name' => $name,
             'source' => 'admin',
+            'confidentiality' => 'internal',
             'namespace' => 'Modules\\' . $studlyModuleName,
             'path' => 'modules/' . $commandName,
             'status' => true,
@@ -263,18 +264,19 @@ class ModuleMakerService
                 break;
             }
         }
-        
+
         if (!$exists) {
             $currentData[] = $newItem;
         }
 
         file_put_contents($dataJson, json_encode($currentData, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
-        
+
         return Module::create([
             'name' => $name,
             'namespace' => 'Modules\\' . $studlyModuleName,
             'path' => 'modules/' . $commandName,
             'user_id' => auth()->id(),
+            'confidentiality' => 'internal',
         ]);
     }
 
@@ -320,7 +322,7 @@ class ModuleMakerService
         $navLabel = $formatStr('navigation_label', Str::title(Str::plural($resourceName)));
         $navGroup = $formatStr('navigation_group', 'Content');
         $navIcon = $formatStr('navigation_icon', 'heroicon-o-rectangle-stack');
-        
+
         $navSort = $resourceConfig['navigation_sort'] ?? 1;
 
         $modelLabel = $formatStr('model_label', Str::title($modelName));
@@ -364,7 +366,7 @@ class ModuleMakerService
             ],
             $stub
         );
-        
+
         file_put_contents($resourceFile, $resourceFileContent);
     }
 
@@ -436,7 +438,7 @@ class ModuleMakerService
         // Generate Actions
         $actionsSchema = $this->generateTableActions($layoutData);
         if (empty($actionsSchema)) {
-             $actionsSchema = "\Filament\Actions\EditAction::make(),\n                \Filament\Actions\DeleteAction::make(),\n                \Filament\Actions\ViewAction::make(),";
+            $actionsSchema = "\Filament\Actions\EditAction::make(),\n                \Filament\Actions\DeleteAction::make(),\n                \Filament\Actions\ViewAction::make(),";
         }
         $content = str_replace('StubRecordActions', $actionsSchema, $content);
 
@@ -444,7 +446,7 @@ class ModuleMakerService
         // StubBulkActions
         $bulkActions = "\Filament\Actions\BulkActionGroup::make([\n                    \Filament\Actions\DeleteBulkAction::make(),\n                ]),";
         $content = str_replace('StubBulkActions', $bulkActions, $content);
-        
+
         file_put_contents($tableFile, $content);
     }
 
@@ -459,7 +461,7 @@ class ModuleMakerService
 
         foreach ($pages as $pageType => $stubFile) {
             $pageName = $pageType . $resourceName;
-            
+
             $pageFile = base_path("modules/{$commandName}/src/Filament/Resources/{$resourceName}Resource/Pages/{$pageName}.php");
             $stub = file_get_contents(base_path("packages/modular/stubs/Filament/Resources/Pages/{$stubFile}"));
 
@@ -510,10 +512,10 @@ class ModuleMakerService
         $migrationFileName = now()->format('Y_m_d_His') . '_' . $migrationName . '.php';
         $migrationFile = base_path("modules/{$commandName}/migrations/{$migrationFileName}");
         $stub = file_get_contents(base_path('packages/modular/stubs/migration.php'));
-        
+
         // Ensure dir exists
         $migDir = dirname($migrationFile);
-        if(!is_dir($migDir)) {
+        if (!is_dir($migDir)) {
             mkdir($migDir, 0755, true);
         }
 
@@ -523,11 +525,11 @@ class ModuleMakerService
                 // But since we updated callers to pass full objects, we should expect array.
                 // However, createMigrationFile signature was not strictly typed for $columns content initially. 
                 // Let's safe cast.
-                
+
                 $type = is_array($columnData) ? $columnData['type'] : $columnData;
                 $props = is_array($columnData) ? $columnData : [];
                 $name = $props['name'] ?? $columnName; // Use name from prop if available (createDB loop uses name index)
-                
+
                 // If the key is numeric (because we passed list of columns), name comes from prop
                 // If key is string (legacy associative), name comes from key.
                 if (is_numeric($columnName) && isset($props['name'])) {
@@ -553,7 +555,7 @@ class ModuleMakerService
                 if (!empty($props['index'])) {
                     $def .= "->index()";
                 }
-                
+
                 // Add Default Value
                 if (isset($props['default_value']) && $props['default_value'] !== '') {
                     $val = $props['default_value'];
@@ -562,7 +564,7 @@ class ModuleMakerService
                     } elseif (strtolower($val) === 'true') {
                         $def .= "->default(true)";
                     } elseif (strtolower($val) === 'false') {
-                         $def .= "->default(false)";
+                        $def .= "->default(false)";
                     } elseif (is_numeric($val)) {
                         $def .= "->default({$val})";
                     } else {
@@ -574,9 +576,9 @@ class ModuleMakerService
                 return "            {$def};";
             })
             ->implode("\n");
-            
+
         $migrationFileContent = str_replace(array('StubModuleName', '//columns'), array(Str::plural($tableName), $columnsContent), $stub);
-        
+
         // Pivot Table Adjustments: Remove ID and Timestamps
         if (($tableData['type'] ?? 'standard') === 'pivot') {
             $migrationFileContent = str_replace('$table->id();', '', $migrationFileContent);
@@ -619,7 +621,7 @@ class ModuleMakerService
                 $modelFileContent
             );
         }
-        
+
         // Pivot Support
         if ($type === 'pivot') {
             $modelFileContent = str_replace(
@@ -634,8 +636,8 @@ class ModuleMakerService
             $hasId = collect($columns)->contains('id') || isset($columns['id']);
             if (!$hasId) {
                 $modelFileContent = str_replace(
-                    'use SoftDeletes;', 
-                    "use SoftDeletes;\n    public \$incrementing = false;", 
+                    'use SoftDeletes;',
+                    "use SoftDeletes;\n    public \$incrementing = false;",
                     $modelFileContent
                 );
             }
@@ -664,23 +666,23 @@ class ModuleMakerService
         $relationships = "";
         foreach ($columns as $columnName => $data) {
             $columnType = is_array($data) ? $data['type'] : $data;
-            
+
             if ($columnType === 'foreignId') {
                 $metadata = is_array($data) ? $data : [];
                 $specifiedModel = $metadata['related_model'] ?? null;
 
                 // Infer relationship name: user_id -> user
                 $relationName = Str::camel(str_replace('_id', '', $columnName));
-                
+
                 if ($specifiedModel) {
                     // Use FQCN directly if backslash present
                     if (str_contains($specifiedModel, '\\')) {
-                         $relatedClass = "\\{$specifiedModel}";
+                        $relatedClass = "\\{$specifiedModel}";
                     } else {
-                         // Fallback: Studly Singular
-                         $relatedClass = Str::studly(Str::singular($specifiedModel));
+                        // Fallback: Studly Singular
+                        $relatedClass = Str::studly(Str::singular($specifiedModel));
                     }
-                     $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedClass}::class);\n    }\n";
+                    $relationships .= "\n    public function {$relationName}(): \Illuminate\Database\Eloquent\Relations\BelongsTo\n    {\n        return \$this->belongsTo({$relatedClass}::class);\n    }\n";
                 } else {
                     // Infer related model class: Studly Singular of relation name
                     $relatedModelName = Str::studly(Str::singular($relationName));
@@ -707,13 +709,13 @@ class ModuleMakerService
             } else {
                 // It's a table name from our new module
                 $relatedShortName = Str::studly(Str::singular($related));
-                
+
                 // Check if the related model is likely in the same module (Standard behavior)
                 // We assume it is in the same namespace unless we have info otherwise.
                 // However, if the user explicitly wants to ensure consistent namespace:
                 // We'll produce just the ClassName if it's local, or FQCN if external.
                 // Since we are building this module right now, use the module namespace.
-                
+
                 $relatedClass = "{$relatedShortName}";
                 // No FQCN prefix needed if in same directory/namespace
             }
@@ -729,28 +731,28 @@ class ModuleMakerService
 
             // Generate Code
             if ($type === 'belongsToMany' && $pivot) {
-                 // Assuming Pivot Model Name is StudlySingular or we use table name
-                 $pivotTable = $pivot;
-                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\BelongsToMany\n    {\n        return \$this->belongsToMany({$relatedClass}::class, '{$pivotTable}');\n    }\n";
+                // Assuming Pivot Model Name is StudlySingular or we use table name
+                $pivotTable = $pivot;
+                $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\BelongsToMany\n    {\n        return \$this->belongsToMany({$relatedClass}::class, '{$pivotTable}');\n    }\n";
             } elseif ($type === 'hasMany') {
-                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasMany\n    {\n        return \$this->hasMany({$relatedClass}::class);\n    }\n";
+                $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasMany\n    {\n        return \$this->hasMany({$relatedClass}::class);\n    }\n";
             } elseif ($type === 'hasOne') {
-                 $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasOne\n    {\n        return \$this->hasOne({$relatedClass}::class);\n    }\n";
+                $relationships .= "\n    public function {$methodName}(): \Illuminate\Database\Eloquent\Relations\HasOne\n    {\n        return \$this->hasOne({$relatedClass}::class);\n    }\n";
             }
         }
-        
+
         // Helper to check if column exists
         $hasColumn = fn($name) => collect($columns)->contains(fn($c) => ($c['name'] ?? null) === $name || $c === $name);
 
         $bootLogic = "";
-        
+
         $hasCreatedBy = $hasColumn('created_by');
         $hasUpdatedBy = $hasColumn('updated_by');
         $hasDeletedBy = $hasColumn('deleted_by');
 
         if ($hasCreatedBy || $hasUpdatedBy || $hasDeletedBy) {
             $bootLogic .= "\n    protected static function booted()\n    {\n";
-            
+
             if ($hasCreatedBy) {
                 $bootLogic .= "        static::creating(function (\$model) {\n            \$model->created_by = auth()->id();\n        });\n";
             }
@@ -758,7 +760,7 @@ class ModuleMakerService
                 $bootLogic .= "        static::updating(function (\$model) {\n            \$model->updated_by = auth()->id();\n        });\n";
             }
             if ($hasDeletedBy) {
-                 $bootLogic .= "        static::deleting(function (\$model) {\n            \$model->deleted_by = auth()->id();\n            \$model->saveQuietly();\n        });\n";
+                $bootLogic .= "        static::deleting(function (\$model) {\n            \$model->deleted_by = auth()->id();\n            \$model->saveQuietly();\n        });\n";
             }
 
             $bootLogic .= "    }\n";
@@ -837,32 +839,32 @@ class ModuleMakerService
 
         foreach ($files as $file) {
             $content = file_get_contents($file->getRealPath());
-            
+
             // Extract Namespace
             if (preg_match('/namespace\s+(.+?);/', $content, $nsMatches)) {
                 $namespace = $nsMatches[1];
-                
+
                 // Extract Class Name
                 if (preg_match('/class\s+(\w+)/', $content, $classMatches)) {
                     $className = $classMatches[1];
                     $fullClass = $namespace . '\\' . $className;
-                    
+
                     // Determine Group (Module Name)
                     // Path example: .../modules/core/user/src/Models/User.php
                     // Relative path: core/user/src/Models/User.php
                     $relativePath = $file->getRelativePathname();
-                    
+
                     // Extract module part: core/user or region
                     // Remove /src/Models/User.php
                     $modulePath = str_replace('/src/Models/' . $file->getFilename(), '', $relativePath);
                     // Convert to title case for label: core/user -> Core/User
                     $groupLabel = Str::title(str_replace('/', ' / ', $modulePath));
-                    
+
                     $models[$groupLabel][$fullClass] = $className; // Store as FQCN => Name
                 }
             }
         }
-        
+
         return $models;
     }
 
@@ -945,16 +947,16 @@ class ModuleMakerService
                 case 'field':
                     $colName = $data['column'] ?? null;
                     $isTranslatable = $data['is_translatable'] ?? false;
-                    
+
                     if ($isTranslatable && $colName) {
                         $components[] = "...getNameInputsFilament('{$colName}')";
                     } elseif ($colName) {
                         $dbColData = $columns[$colName] ?? [];
                         $dbColData = is_array($dbColData) ? $dbColData : [];
-                        
+
                         $mergedMeta = array_merge($dbColData, $data);
                         $colType = $mergedMeta['type'] ?? 'string';
-                        
+
                         $components[] = $this->getFieldString($colName, $colType, $mergedMeta);
                     }
                     break;
@@ -978,56 +980,56 @@ class ModuleMakerService
                     $tabsContentString = implode(",\n                        ", $tabComponents);
                     $components[] = "\Filament\Schemas\Components\Tabs::make('Tabs')\n                    ->tabs([\n                        {$tabsContentString}\n                    ])";
                     break;
-                
+
                 case 'fieldset':
                     $label = $data['label'] ?? 'Fieldset';
                     $innerBlocks = $data['schema'] ?? [];
                     $innerContent = $this->generateFormSchema($columns, $innerBlocks);
                     $components[] = "\Filament\Schemas\Components\Fieldset::make('{$label}')\n                    ->schema([\n                        " . str_replace("\n", "\n    ", $innerContent) . "\n                    ])";
                     break;
-                
+
                 case 'grid':
                 case 'split': // Split is handled similarly to Grid in Filament, or use Split component.
-                // Filament Split component structure: Split::make([ Section::make(), Section::make() ])
-                // But our builder uses generic 2-col structure.
-                // If type is 'split', use Split::make([]). If 'grid', Grid::make().
+                    // Filament Split component structure: Split::make([ Section::make(), Section::make() ])
+                    // But our builder uses generic 2-col structure.
+                    // If type is 'split', use Split::make([]). If 'grid', Grid::make().
                     $gridCols = $data['columns'] ?? 2;
-                    $gridItems = $data['items'] ?? []; 
-                    
+                    $gridItems = $data['items'] ?? [];
+
                     $colComponents = [];
                     // Loop through columns
                     // Note: Split component expects an array of components, it distributes them. 
                     // Grid expects schema per column? No, Grid::make()->schema([ ...items... ]) uses columnSpan to place items?
                     // Actually Filament Grid: schema([...]) -> items flow. 
                     // My previous logic: Create Groups for each column.
-                    
+
                     for ($i = 0; $i < $gridCols; $i++) {
                         $colBlocks = $gridItems[$i] ?? [];
                         if (empty($colBlocks)) {
-                             // Empty column placeholder
+                            // Empty column placeholder
                             if ($type === 'split') {
-                                 // specific section for split?
-                                 $colComponents[] = "\Filament\Schemas\Components\Section::make([])"; 
-                             } else {
-                                 $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
-                             }
-                             continue;
+                                // specific section for split?
+                                $colComponents[] = "\Filament\Schemas\Components\Section::make([])";
+                            } else {
+                                $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([])\n                        ->columnSpan(1)";
+                            }
+                            continue;
                         }
                         $colContent = $this->generateFormSchema($columns, $colBlocks);
-                        
+
                         if ($type === 'split') {
                             $colComponents[] = "\Filament\Schemas\Components\Section::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])";
                         } else {
                             $colComponents[] = "\Filament\Schemas\Components\Group::make()\n                        ->schema([\n                            " . str_replace("\n", "\n    ", $colContent) . "\n                        ])\n                        ->columnSpan(1)";
                         }
                     }
-                    
+
                     $gridContent = implode(",\n                        ", $colComponents);
-                    
+
                     if ($type === 'split') {
-                         $components[] = "\Filament\Schemas\Components\Split::make([\n                        {$gridContent}\n                    ])";
+                        $components[] = "\Filament\Schemas\Components\Split::make([\n                        {$gridContent}\n                    ])";
                     } else {
-                         $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
+                        $components[] = "\Filament\Schemas\Components\Grid::make({$gridCols})\n                    ->schema([\n                        {$gridContent}\n                    ])";
                     }
                     break;
 
@@ -1052,17 +1054,17 @@ class ModuleMakerService
     private function getFieldString($name, $type, $metadata = []): string
     {
         $label = Str::headline($name);
-        
+
         // Relationship handling
         if ($type === 'foreignId') {
             $relatedModel = $metadata['related_model'] ?? null;
             $relatedColumn = $metadata['related_column'] ?? 'name';
             $isTranslatable = $metadata['is_translatable'] ?? false; // Check flag
-            
+
             if (!$relatedModel) {
-                 $relatedModel = Str::studly(str_replace('_id', '', $name));
+                $relatedModel = Str::studly(str_replace('_id', '', $name));
             }
-            
+
             $relationName = Str::camel(str_replace('_id', '', $name));
 
             // Custom query logic ONLY if translatable
@@ -1073,18 +1075,18 @@ class ModuleMakerService
                 return "\Filament\Forms\Components\Select::make('{$name}')\n                    ->label('{$label}')\n                    ->relationship('{$relationName}', '{$relatedColumn}')\n                    ->searchable()\n                    ->preload()";
             }
         }
-        
+
         // Basic type mapping
         $field = "";
-        
+
         // Determine Label Syntax
         $isTranslateLabel = $metadata['translate_label'] ?? false;
         $labelStr = $isTranslateLabel ? "__('{$label}')" : "'{$label}'";
 
         // Builder Helper for Label
         // We replace generic ->label('...') with our dynamic one
-        $replaceLabel = function($str) use ($labelStr) {
-             return preg_replace("/->label\('.*?'\)/", "->label({$labelStr})", $str);
+        $replaceLabel = function ($str) use ($labelStr) {
+            return preg_replace("/->label\('.*?'\)/", "->label({$labelStr})", $str);
         };
 
         switch ($type) {
@@ -1135,7 +1137,7 @@ class ModuleMakerService
         if (!empty($metadata['hint'])) {
             $field .= "\n                    ->hint('{$metadata['hint']}')";
         }
-         if (!empty($metadata['default'])) {
+        if (!empty($metadata['default'])) {
             $field .= "\n                    ->default('{$metadata['default']}')";
         }
         if (!empty($metadata['column_span'])) {
@@ -1149,60 +1151,60 @@ class ModuleMakerService
     private function generateTableSchema(array $columns, array $builderBlocks): string
     {
         if (empty($builderBlocks['columns'] ?? [])) {
-             // Fallback
-             return "";
+            // Fallback
+            return "";
         }
 
         $components = [];
 
         foreach ($builderBlocks['columns'] as $col) {
-             $name = $col['name'];
-             $label = $col['label'] ?? Str::headline($name);
-             $labelStr = ($col['is_label_translated'] ?? false) ? "__('{$label}')" : "'{$label}'";
+            $name = $col['name'];
+            $label = $col['label'] ?? Str::headline($name);
+            $labelStr = ($col['is_label_translated'] ?? false) ? "__('{$label}')" : "'{$label}'";
 
-             $isSortable = $col['sortable'] ?? false ? '->sortable()' : '';
-             $isSearchable = $col['searchable'] ?? false ? '->searchable()' : '';
-             $isToggleable = $col['toggleable'] ?? false ? '->toggleable()' : '';
-             $isWrap = $col['wrap'] ?? false ? '->wrap()' : '';
-             $isCopyable = $col['copyable'] ?? false ? '->copyable()' : '';
-             
-             $tooltip = '';
-             if (!empty($col['tooltip'])) {
-                 $tooltipStr = ($col['is_tooltip_translated'] ?? false) ? "__('{$col['tooltip']}')" : "'{$col['tooltip']}'";
-                 $tooltip = "->tooltip({$tooltipStr})";
-             }
-             
-             // Advanced Features
-             $isTranslatable = $col['is_translatable'] ?? false;
-             $relatedColumn = $col['related_column'] ?? 'name';
+            $isSortable = $col['sortable'] ?? false ? '->sortable()' : '';
+            $isSearchable = $col['searchable'] ?? false ? '->searchable()' : '';
+            $isToggleable = $col['toggleable'] ?? false ? '->toggleable()' : '';
+            $isWrap = $col['wrap'] ?? false ? '->wrap()' : '';
+            $isCopyable = $col['copyable'] ?? false ? '->copyable()' : '';
 
-             if ($isTranslatable) {
-                 if (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
-                     // Translatable Relationship
-                     $relationName = Str::camel(str_replace('_id', '', $name));
-                     $nameField = "'{$relationName}.{$relatedColumn}.' . app()->getLocale()";
-                 } else {
-                     // Translatable Column
-                     $nameField = "'{$name}.' . app()->getLocale()";
-                 }
-             } elseif (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
-                 // Standard Relationship
-                 $relationName = Str::camel(str_replace('_id', '', $name));
-                 $nameField = "'{$relationName}.{$relatedColumn}'";
-             } else {
-                 // Standard Column
-                 $nameField = "'{$name}'";
-             }
+            $tooltip = '';
+            if (!empty($col['tooltip'])) {
+                $tooltipStr = ($col['is_tooltip_translated'] ?? false) ? "__('{$col['tooltip']}')" : "'{$col['tooltip']}'";
+                $tooltip = "->tooltip({$tooltipStr})";
+            }
 
-             $type = $col['type'] ?? 'TextColumn';
-             $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label({$labelStr}){$isSortable}{$isSearchable}{$isToggleable}{$isWrap}{$isCopyable}{$tooltip}";
-             
-             $components[] = $cmp;
+            // Advanced Features
+            $isTranslatable = $col['is_translatable'] ?? false;
+            $relatedColumn = $col['related_column'] ?? 'name';
+
+            if ($isTranslatable) {
+                if (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
+                    // Translatable Relationship
+                    $relationName = Str::camel(str_replace('_id', '', $name));
+                    $nameField = "'{$relationName}.{$relatedColumn}.' . app()->getLocale()";
+                } else {
+                    // Translatable Column
+                    $nameField = "'{$name}.' . app()->getLocale()";
+                }
+            } elseif (($col['dbType'] ?? null) === 'foreignId' || str_ends_with($name, '_id')) {
+                // Standard Relationship
+                $relationName = Str::camel(str_replace('_id', '', $name));
+                $nameField = "'{$relationName}.{$relatedColumn}'";
+            } else {
+                // Standard Column
+                $nameField = "'{$name}'";
+            }
+
+            $type = $col['type'] ?? 'TextColumn';
+            $cmp = "\Filament\Tables\Columns\\{$type}::make({$nameField})\n                    ->label({$labelStr}){$isSortable}{$isSearchable}{$isToggleable}{$isWrap}{$isCopyable}{$tooltip}";
+
+            $components[] = $cmp;
         }
 
         return implode(",\n                ", $components);
     }
-    
+
     private function createLanguageFiles(string $commandName, array $translations)
     {
         if (empty($translations)) {
@@ -1212,9 +1214,9 @@ class ModuleMakerService
         // Organize translations by locale
         // Input: 'Key' => ['en' => 'Value', 'ru' => 'Value']
         // Output: 'en' => ['Key' => 'Value'], 'ru' => ['Key' => 'Value']
-        
+
         $localesData = [];
-        
+
         foreach ($translations as $key => $locales) {
             foreach ($locales as $code => $value) {
                 if (!empty($value)) {
@@ -1230,7 +1232,7 @@ class ModuleMakerService
 
         foreach ($localesData as $code => $keys) {
             $filePath = "{$langDir}/{$code}.json";
-            
+
             // Merge with existing if file exists
             if (file_exists($filePath)) {
                 $existing = json_decode(file_get_contents($filePath), true) ?? [];
@@ -1240,6 +1242,7 @@ class ModuleMakerService
             file_put_contents($filePath, json_encode($keys, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
     }
+
     private function generateTableFilters(array $builderBlocks): string
     {
         if (empty($builderBlocks['filters'] ?? [])) {
@@ -1275,7 +1278,7 @@ class ModuleMakerService
         if (empty($builderBlocks['actions'] ?? [])) {
             // If empty, return default or empty? Stub has defaults. 
             // If user cleared them, we should probably return empty to respect "delete action" feature.
-            return ""; 
+            return "";
         }
 
         $components = [];

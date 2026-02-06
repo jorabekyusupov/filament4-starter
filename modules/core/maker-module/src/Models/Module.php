@@ -21,7 +21,8 @@ class Module extends BaseModel
         'status',
         'stable',
         'description',
-        'alias'
+        'alias',
+        'confidentiality'
     ];
 
     // Add any relationships or methods as needed

@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->string('alias')->nullable();
             $table->string('path');
             $table->string('source')->index()->default('admin');
+            $table->string("confidentiality")->index()
+                ->default("internal");
             $table->boolean('stable')->index()->default(true);
             $table->unsignedBigInteger('user_id')->nullable();
             $table->boolean('status')->index()->default(true);

@@ -33,6 +33,7 @@ class SyncModuleCommand extends Command
         foreach ($json as $moduleData) {
             $module = Module::create([
                 'name' => $moduleData['name'],
+                'confidentiality' => $moduleData['confidentiality'] ?? 'internal',
                 'description' => $moduleData['description'] ?? ($moduleData['name'] . " module"),
                 'alias' => Str::studly($moduleData['name']), // Or namespace?
                 'path' => $moduleData['path'],

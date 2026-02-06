@@ -35,7 +35,7 @@ def search_rows(rows: list[dict], query: str, max_results: int) -> list[dict]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Search filament4-starter-infra data files.")
+    parser = argparse.ArgumentParser(description="Search joraskill data files.")
     parser.add_argument("query", help="Search query")
     parser.add_argument("--file", choices=FILES.keys(), help="Search specific data file")
     parser.add_argument("--max-results", "-n", type=int, default=5)

@@ -1,0 +1,7 @@
+No,Command,When,Notes
+1,php artisan make:module <name>,Create module,Then composer update + modules:sync
+2,composer update modules/<name>,Register module,Required after make:module
+3,php artisan modules:sync,Sync configs,Adds module configs to phpunit/IDE
+4,php artisan filament:upgrade,After dependency update,Run via composer scripts
+5,npm run dev,Local dev,Vite dev server
+6,php artisan serve,Local dev,App server

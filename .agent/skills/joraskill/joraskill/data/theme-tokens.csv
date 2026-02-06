@@ -1,0 +1,7 @@
+No,Token,Tailwind Class,Source,Usage
+1,--color-primary,bg-primary|text-primary,theme.css,Primary actions and highlights
+2,--color-link,text-link|hover:text-link-hover,theme.css,Links and interactive text
+3,--color-body,text-body,theme.css,Body text
+4,--color-dark-bg,bg-dark-bg,theme.css,Dark background sections
+5,--color-dark-card,bg-dark-card,theme.css,Dark card background
+6,--radius-base,rounded-[var(--radius-base)],theme.css,Base radius for cards/sections

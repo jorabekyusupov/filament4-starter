@@ -1,13 +1,13 @@
 ---
-name: filament4-starter-infra
-description: "Use when working on /Users/yusupov/Herd/filament4-starter for project infrastructure, module structure, Filament panels/pages/resources, or theme/Tailwind usage. Covers module creation flow, directory layout, and theme.css token usage for consistent styling."
+name: joraskill
+description: "Use for Laravel Filament infrastructure work: module scaffolding and structure, Filament panel/page/resource implementation, Tailwind theme token usage, and applying project base classes with SOLID/OOP and design-pattern conventions."
 ---
 
 # Filament4 Starter Infra
 
 ## Quick start
 
-- Confirm you are in `/Users/yusupov/Herd/filament4-starter`.
+- Confirm you are at the project root (must contain `composer.json`, `modules/core`, and `app/Providers/Filament/AdminPanelProvider.php`).
 - Prefer project conventions for modules and Filament in references below.
 
 ## When to use this skill
@@ -23,6 +23,7 @@ description: "Use when working on /Users/yusupov/Herd/filament4-starter for proj
 2. Prefer scripts over manual steps when available.
 3. Run scripts with `--help` first if unsure.
 4. Follow Execution rules and Output expectations.
+5. After completing the task, append one English usage log entry with `scripts/log_skill_usage.py` for analysis.
 
 ## Read these references as needed
 
@@ -52,6 +53,7 @@ description: "Use when working on /Users/yusupov/Herd/filament4-starter for proj
 - `scripts/search_data_bm25.py "<query>" [--file <dataset>]`: BM25-ranked search across CSV datasets.
 - `scripts/new_filament_resource.py <module> <ResourceName> [--model <ModelClass>]`: scaffold Filament Resource in Applications-style structure.
 - `scripts/package_skill.py [--skill-dir <path>] [--out-dir dist] [--name <skill-name>]`: package the skill into a `.skill` file.
+- `scripts/log_skill_usage.py`: append an English JSONL analytics log entry (`logs/usage.jsonl`) without changing project code.
 
 ## Execution rules
 
@@ -61,6 +63,7 @@ description: "Use when working on /Users/yusupov/Herd/filament4-starter for proj
 - Avoid introducing new styling systems.
 - When using Filament classes/components, import namespaces according to the current package structure under `vendor/filament/filament` (do not guess old namespaces).
 - Always extend base classes from `Modules\App\` when available (BaseModel, BaseDTO, BaseReadRepository, BaseWriteRepository, BaseServiceProvider, BasePolicy, Controller, BaseService).
+- All UI/visual text must be translated via module JSON `lang/<locale>.json` files (no hardcoded strings in views/components/resources).
 - Follow SOLID principles strictly (see `references/solid.md`).
 - Follow OOP principles strictly (see `references/oop.md`).
 - Follow project design patterns strictly (see `references/design-patterns.md`).
@@ -69,3 +72,15 @@ description: "Use when working on /Users/yusupov/Herd/filament4-starter for proj
 
 - When asked to add UI: provide Blade/Filament snippets with Tailwind classes and theme tokens.
 - When asked to add modules: provide command(s) and folder structure, and note any required composer update steps.
+
+## Usage logging (non-intrusive)
+
+- Logging is analytics-only and must not modify project source files or behavior.
+- Write logs in English for easier cross-task analysis.
+- Record one entry after a task with:
+  - `prompt_intent`: what the prompt is asking for.
+  - `result_quality`: how useful/complete the obtained result is.
+  - `prompt_quality_score`: always score prompt quality on a 1-10 scale.
+  - `prompt_quality_reason`: one short reason for the score.
+- Use:
+  - `python3 scripts/log_skill_usage.py --prompt-intent "<intent>" --work-summary "<what was done>" --result-quality "<result quality>" --prompt-quality-score <1-10> --prompt-quality-reason "<reason>" --outcome done`

@@ -16,5 +16,6 @@
     "roles_administration": "Администрирование ролей",
     "roles" : "Роли",
     "role" : "Роль",
-    "permissions_count": "Количество разрешений"
+    "permissions_count": "Количество разрешений",
+    "workspace_id": "Идентификатор workspace"
 }

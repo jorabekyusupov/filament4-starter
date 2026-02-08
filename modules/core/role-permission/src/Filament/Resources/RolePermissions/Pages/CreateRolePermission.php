@@ -24,7 +24,7 @@ class CreateRolePermission extends CreateRecord
         unset($data['permissions']);
         $data = array_merge([
             'guard_name' => 'web',
-            'organization_id' => auth()->user()->organization_id,
+            'workspace_id' => auth()->user()->workspace_id,
         ], $data);
 
 

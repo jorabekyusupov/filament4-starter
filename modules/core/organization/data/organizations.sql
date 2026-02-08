@@ -1,2 +1,0 @@
-insert into public.organizations (name, slug, structure_id, hidden,status, is_dont_delete, deleted_at, created_at, updated_at)
-values ('{"en": "System Management Organization", "oz": "Tizim boshqaruv tashkiloti", "ru": "Организация управления системой", "uz": "Тизим бошқарув ташкилоти"}', 'default', null, true, true, true,null, '2025-11-10 20:02:23', '2025-11-10 20:02:23');

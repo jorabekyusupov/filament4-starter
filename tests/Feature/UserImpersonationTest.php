@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Modules\User\Models\User;
-use Modules\Organization\Models\Organization;
+use Modules\Workspace\Models\Workspace;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -32,9 +32,9 @@ class UserImpersonationTest extends TestCase
     #[Test]
     public function super_admin_can_impersonate_user()
     {
-        $org = Organization::create([
-            'name' => ['en' => 'Test Org', 'ru' => 'Test Org', 'uz' => 'Test Org'],
-            'slug' => 'test-org',
+        $workspace = Workspace::create([
+            'name' => ['en' => 'Test Workspace', 'ru' => 'Test Workspace', 'uz' => 'Test Workspace'],
+            'slug' => 'test-workspace',
             'status' => true
         ]);
 
@@ -45,7 +45,7 @@ class UserImpersonationTest extends TestCase
         $superAdmin = User::factory()->create([
             'type' => 'superadmin',
             'email' => 'admin@admin.com',
-            'organization_id' => $org->id,
+            'workspace_id' => $workspace->id,
             'status' => true,
         ]);
 
@@ -54,7 +54,7 @@ class UserImpersonationTest extends TestCase
         $targetUser = User::factory()->create([
             'type' => 'employee',
             'email' => 'target@user.com',
-            'organization_id' => $org->id,
+            'workspace_id' => $workspace->id,
             'status' => true,
         ]);
         $targetUser->assignRole($role);

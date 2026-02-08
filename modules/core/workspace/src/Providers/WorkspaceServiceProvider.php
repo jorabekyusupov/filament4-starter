@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Organization\Providers;
+namespace Modules\Workspace\Providers;
 
 use Modules\App\Providers\BaseServiceProvider;
 
-class OrganizationServiceProvider extends BaseServiceProvider
+class WorkspaceServiceProvider extends BaseServiceProvider
 {
     public function register(): void
     {
@@ -13,7 +13,7 @@ class OrganizationServiceProvider extends BaseServiceProvider
 
     public function boot(): void
     {
-        $this->name = 'organization';
+        $this->name = 'workspace';
         parent::boot();
 
 

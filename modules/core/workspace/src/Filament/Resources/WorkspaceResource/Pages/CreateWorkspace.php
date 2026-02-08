@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\Organization\Filament\Resources\OrganizationResource\Pages;
+namespace Modules\Workspace\Filament\Resources\WorkspaceResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Modules\Organization\Filament\Resources\OrganizationResource;
+use Modules\Workspace\Filament\Resources\WorkspaceResource;
 use Modules\User\Models\User;
 
-class CreateOrganization extends CreateRecord
+class CreateWorkspace extends CreateRecord
 {
     use \Modules\RolePermission\Filament\Traits\ManagesPermissionSorting;
 
-    protected static string $resource = OrganizationResource::class;
+    protected static string $resource = WorkspaceResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -29,7 +29,7 @@ class CreateOrganization extends CreateRecord
         $record->syncPermissionsAndUpdateModeratorRole($permissions);
         User::query()
             ->find($moderatorId)
-            ->update(['organization_id' => $record->id]);
+            ->update(['workspace_id' => $record->id]);
         if ($moderatorId) {
             $roleName = 'moderator_' . $record->id;
             $role = \Modules\RolePermission\Models\Role::where('name', $roleName)->first();

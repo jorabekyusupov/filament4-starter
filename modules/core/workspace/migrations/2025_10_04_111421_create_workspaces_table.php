@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('organizations', function (Blueprint $table) {
+        Schema::create('workspaces', function (Blueprint $table) {
             $table->id();
             $table->jsonb('name')
                 ->index()
@@ -31,6 +31,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('organizations');
+        Schema::dropIfExists('workspaces');
     }
 };

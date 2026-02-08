@@ -46,8 +46,8 @@ class RoleResource extends BaseRoleResource
                     ->dateTime()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('organization.name.'.app()->getLocale())
-                    ->label(__('organization'))
+                Tables\Columns\TextColumn::make('workspace.name.'.app()->getLocale())
+                    ->label(__('workspace'))
                     ->searchable(),
 
             ]);
@@ -65,7 +65,7 @@ class RoleResource extends BaseRoleResource
     public static function getEloquentQuery(): Builder
     {
         return Role::query()
-            ->with(['organization']);
+            ->with(['workspace']);
 
     }
     public static function canAccess(): bool

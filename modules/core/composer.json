@@ -12,7 +12,7 @@
             "Modules\\Application\\": "application/src",
             "Modules\\ActivityLog\\": "activity-log/src",
             "Modules\\MakerModule\\": "maker-module/src",
-            "Modules\\Organization\\": "organization/src",
+            "Modules\\Workspace\\": "workspace/src",
             "Modules\\RolePermission\\": "role-permission/src"
         }
     },
@@ -29,7 +29,7 @@
                 "Modules\\MakerModule\\Providers\\MakerModuleServiceProvider",
                 "Modules\\Application\\Providers\\ApplicationServiceProvider",
                 "Modules\\ActivityLog\\Providers\\ActivityLogServiceProvider",
-                "Modules\\Organization\\Providers\\OrganizationServiceProvider",
+                "Modules\\Workspace\\Providers\\WorkspaceServiceProvider",
                 "Modules\\RolePermission\\Providers\\RolePermissionServiceProvider"
             ]
         }

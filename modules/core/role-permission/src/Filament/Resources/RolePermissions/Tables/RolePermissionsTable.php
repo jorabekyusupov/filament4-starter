@@ -28,8 +28,8 @@ class RolePermissionsTable
                     ->label(__('permissions_count'))
                     ->sortable()
                     ->counts('permissions'),
-                TextColumn::make('organization.name.' . app()->getLocale())
-                    ->label(__('organization'))
+                TextColumn::make('workspace.name.' . app()->getLocale())
+                    ->label(__('workspace'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('created_at')

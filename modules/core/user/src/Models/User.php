@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Modules\Organization\Models\Organization;
+use Modules\Workspace\Models\Workspace;
 use Modules\User\Policies\UserPolicy;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -50,7 +50,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'middle_name',
         'email',
         'password',
-        'organization_id',
+        'workspace_id',
         'type',
         'username',
         'pin',
@@ -123,27 +123,27 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         $hasRole = $this->hasRole(Role::all());
         $status = $this->status;
-        $hasOrg = $this->organization()->exists();
-        $orgStatus = $this->organization->status ?? false;
+        $hasWorkspace = $this->workspace()->exists();
+        $workspaceStatus = $this->workspace->status ?? false;
 
-        return $hasRole && $status && $hasOrg && $orgStatus;
+        return $hasRole && $status && $hasWorkspace && $workspaceStatus;
     }
 
-    public function organization()
+    public function workspace()
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Workspace::class);
     }
 
-    public function defOrganization()
+    public function defWorkspace()
     {
-        return $this->belongsTo(Organization::class)
-            ->where('slug', Organization::SLUG_DEFAULT);
+        return $this->belongsTo(Workspace::class)
+            ->where('slug', Workspace::SLUG_DEFAULT);
     }
 
-    public function caOrganization()
+    public function caWorkspace()
     {
-        return $this->belongsTo(Organization::class, 'organization_id')
-            ->where('slug', Organization::SLUG_CA);
+        return $this->belongsTo(Workspace::class, 'workspace_id')
+            ->where('slug', Workspace::SLUG_CA);
     }
 
     public function hasSuperAdmin(): bool
@@ -151,16 +151,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->type === 'superadmin';
     }
 
-    public function hasDefaultOrg(): bool
+    public function hasDefaultWorkspace(): bool
     {
         //check relation
-        return $this->defOrganization()->exists();
+        return $this->defWorkspace()->exists();
     }
 
-    public function hasCAOrganization(): bool
-    {
-        return $this->caOrganization()->exists();
-    }
+
 
     public function hasRoleSuperAdmin(): bool
     {
@@ -175,9 +172,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     }
 
     #[Scope]
-    protected function hasCAOrg(Builder $query): void
+    protected function hasCAWorkspace(Builder $query): void
     {
-        $query->whereHas('caOrganization');
+        $query->whereHas('caWorkspace');
     }
 
     public function firstRole()
@@ -205,4 +202,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return null;
     }
 
+    public function getEmailForPasswordReset()
+    {
+        // TODO: Implement getEmailForPasswordReset() method.
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        // TODO: Implement sendPasswordResetNotification() method.
+    }
 }

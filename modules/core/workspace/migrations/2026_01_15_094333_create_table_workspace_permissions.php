@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('organization_permissions', function (Blueprint $table) {
-            $table->unsignedBigInteger('organization_id');
+        Schema::create('workspace_permissions', function (Blueprint $table) {
+            $table->unsignedBigInteger('workspace_id');
             $table->unsignedBigInteger('permission_id');
-            $table->unique(['organization_id', 'permission_id'], 'org_perm_unique');
+            $table->unique(['workspace_id', 'permission_id'], 'workspace_perm_unique');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('organization_permissions');
+        Schema::dropIfExists('workspace_permissions');
     }
 };

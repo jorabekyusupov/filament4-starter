@@ -24,8 +24,8 @@ class RoleForm
                     ->label('Guard Name')
                     ->required(),
 
-                TextInput::make('organization_id')
-                    ->label('Organization Id')
+                TextInput::make('workspace_id')
+                    ->label(__('workspace_id'))
                     ->integer(),
 
                 TextEntry::make('created_at')

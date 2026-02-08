@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Organization\Filament\Resources;
+namespace Modules\Workspace\Filament\Resources;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -25,15 +25,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Modules\Organization\Filament\Resources\OrganizationResource\Pages;
-use Modules\Organization\Models\Organization;
+use Modules\Workspace\Filament\Resources\WorkspaceResource\Pages;
+use Modules\Workspace\Models\Workspace;
 use Modules\User\Models\User;
 
-class OrganizationResource extends Resource
+class WorkspaceResource extends Resource
 {
-    protected static ?string $model = Organization::class;
+    protected static ?string $model = Workspace::class;
 
-    protected static ?string $slug = 'organizations';
+    protected static ?string $slug = 'workspaces';
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-user-group';
 
@@ -46,17 +46,17 @@ class OrganizationResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('organization');
+        return __('workspace');
     }
 
     public static function getLabel(): ?string
     {
-        return __('organization');
+        return __('workspace');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('organizations');
+        return __('workspaces');
     }
 
     public static function form(Schema $schema): Schema
@@ -73,7 +73,7 @@ class OrganizationResource extends Resource
                                 DB::raw("CONCAT_WS(' ', first_name, last_name, middle_name) AS full_name")
                             ])
                             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
-                                $query->where('organization_id', auth()->user()->organization_id);
+                                $query->where('workspace_id', auth()->user()->workspace_id);
                             })
                             ->limit(10);
                         return $query->pluck('full_name', 'id')->toArray();
@@ -85,7 +85,7 @@ class OrganizationResource extends Resource
                                 DB::raw("CONCAT_WS(' ', first_name, last_name, middle_name) AS full_name")
                             ])
                             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
-                                $query->where('organization_id', auth()->user()->organization_id);
+                                $query->where('workspace_id', auth()->user()->workspace_id);
                             })
                             ->where(function (Builder $query) use ($search) {
                                 $query->where('first_name', 'like', "%{$search}%")
@@ -259,9 +259,9 @@ class OrganizationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrganizations::route('/'),
-            'create' => Pages\CreateOrganization::route('/create'),
-            'edit' => Pages\EditOrganization::route('/{record}/edit'),
+            'index' => Pages\ListWorkspaces::route('/'),
+            'create' => Pages\CreateWorkspace::route('/create'),
+            'edit' => Pages\EditWorkspace::route('/{record}/edit'),
         ];
     }
 

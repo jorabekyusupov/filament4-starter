@@ -46,7 +46,7 @@ class UserCandidateSyncService
             last_name: $user->last_name,
             middle_name: $user->middle_name,
             foreign_id: $user->getKey(),
-            foreign_organization_id: $user->organization_id,
+            foreign_workspace_id: $user->workspace_id,
         );
     }
 }

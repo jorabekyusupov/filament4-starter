@@ -105,14 +105,14 @@ function getWhereTranslationColumns(Builder $query, $name = 'name', $search = nu
     return $query;
 }
 
-function getChildLocationOrganizations(): array
+function getChildLocationWorkspaces(): array
 {
-    return array_merge(cache()->get('user_' . auth()->id() . '_second_parent_organization', []), [auth()->user()->organization_id]);
+    return array_merge(cache()->get('user_' . auth()->id() . '_second_parent_workspace', []), [auth()->user()->workspace_id]);
 }
 
-function getChildMainOrganizations(): array
+function getChildMainWorkspaces(): array
 {
-    return array_merge(cache()->get('user_' . auth()->id() . '_first_parent_organization', []), [auth()->user()->organization_id]);
+    return array_merge(cache()->get('user_' . auth()->id() . '_first_parent_workspace', []), [auth()->user()->workspace_id]);
 }
 if (!function_exists('get_intl_locale')) {
     function get_intl_locale()

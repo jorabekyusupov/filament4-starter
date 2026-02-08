@@ -3,7 +3,7 @@
 namespace Modules\RolePermission\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Organization\Models\Organization;
+use Modules\Workspace\Models\Workspace;
 use Modules\RolePermission\Models\Permission;
 use Modules\RolePermission\Models\Role;
 
@@ -23,7 +23,7 @@ class RolePermissionSeeder extends Seeder
                     'oz' => 'Super Admin',
                 ],
                 'is_dont_delete' => true,
-                'organization_id' => Organization::query()->defaultId(),
+                'workspace_id' => Workspace::query()->defaultId(),
             ]);
 
         $permissions = Permission::query()->pluck('name')->toArray();

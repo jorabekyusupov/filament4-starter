@@ -7,5 +7,6 @@
     "Select All": "Barchasini tanlash",
     "Unselect All": "Barchasini bekor qilish",
     "permissions": "Ruxsatlar",
-    "permission": "Ruxsat"
+    "permission": "Ruxsat",
+    "workspace_id": "Workspace ID"
 }

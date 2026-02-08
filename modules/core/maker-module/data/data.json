@@ -27,11 +27,11 @@
         "stable": true
     },
     {
-        "name": "organization",
+        "name": "workspace",
         "source": "admin",
         "confidentiality": "internal",
-        "namespace": "Modules\\Organization",
-        "path": "modules\/core\/organization",
+        "namespace": "Modules\\Workspace",
+        "path": "modules\/core\/workspace",
         "status": true,
         "stable": true
     },

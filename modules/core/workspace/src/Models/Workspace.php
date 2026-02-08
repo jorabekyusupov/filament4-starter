@@ -1,17 +1,17 @@
 <?php
 
-namespace Modules\Organization\Models;
+namespace Modules\Workspace\Models;
 
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\App\Models\BaseModel;
-use Modules\Organization\Policies\OrganizationPolicy;
+use Modules\Workspace\Policies\WorkspacePolicy;
 use Modules\RolePermission\Models\Permission;
 
-#[UsePolicy(OrganizationPolicy::class)]
-class Organization extends BaseModel
+#[UsePolicy(WorkspacePolicy::class)]
+class Workspace extends BaseModel
 {
     use SoftDeletes;
 
@@ -61,15 +61,15 @@ class Organization extends BaseModel
     {
         return $this->belongsToMany(
             Permission::class,
-            'organization_permissions',
-            'organization_id',
+            'workspace_permissions',
+            'workspace_id',
             'permission_id'
         );
     }
 
     public function roles()
     {
-        return $this->hasMany(\Modules\RolePermission\Models\Role::class, 'organization_id', 'id');
+        return $this->hasMany(\Modules\RolePermission\Models\Role::class, 'workspace_id', 'id');
     }
 
     public function syncPermissionsAndUpdateModeratorRole(array $permissions): void
@@ -90,7 +90,7 @@ class Organization extends BaseModel
                 'guard_name' => 'web',
             ],
             [
-                'organization_id' => $this->id,
+                'workspace_id' => $this->id,
                 'translations' => [
                     'uz' => 'Moderator',
                     'oz' => 'Moderator',
@@ -100,8 +100,8 @@ class Organization extends BaseModel
             ]
         );
 
-        if ($role->organization_id !== $this->id) {
-            $role->update(['organization_id' => $this->id]);
+        if ($role->workspace_id !== $this->id) {
+            $role->update(['workspace_id' => $this->id]);
         }
 
         $role->syncPermissions($permissions);

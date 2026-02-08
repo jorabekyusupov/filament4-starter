@@ -23,8 +23,8 @@ class RoleInfolist
                 TextEntry::make('guard_name')
                     ->label('Guard Name'),
 
-                TextEntry::make('organization_id')
-                    ->label('Organization Id'),
+                TextEntry::make('workspace_id')
+                    ->label(__('workspace_id')),
 
                 TextEntry::make('created_at')
                     ->label('Created Date')

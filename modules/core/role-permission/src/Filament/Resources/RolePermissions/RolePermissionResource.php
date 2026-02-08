@@ -8,7 +8,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\Organization\Models\Organization;
+use Modules\Workspace\Models\Workspace;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermissionForm;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Schemas\RolePermissionInfolist;
 use Modules\RolePermission\Filament\Resources\RolePermissions\Tables\RolePermissionsTable;
@@ -67,11 +67,11 @@ class RolePermissionResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $defaultOrganizationId = Organization::query()->defaultId();
+        $defaultWorkspaceId = Workspace::query()->defaultId();
         return parent::getEloquentQuery()
             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
-                $query->where('organization_id', auth()->user()->organization_id);
+                $query->where('workspace_id', auth()->user()->workspace_id);
             })
-            ->where('organization_id', '!=', $defaultOrganizationId);
+            ->where('workspace_id', '!=', $defaultWorkspaceId);
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('username')->nullable()->unique();
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->foreignId('organization_id')->nullable()->index();
+            $table->foreignId('workspace_id')->nullable()->index();
             $table->string('password')->nullable();
             $table->string('type')->default('manager')->index();
             $table->unsignedBigInteger('pin')->nullable()->index();

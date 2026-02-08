@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\Organization\Filament\Resources\OrganizationResource\Pages;
+namespace Modules\Workspace\Filament\Resources\WorkspaceResource\Pages;
 
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Modules\Organization\Filament\Resources\OrganizationResource;
+use Modules\Workspace\Filament\Resources\WorkspaceResource;
 use Modules\Structure\Models\Structure;
 use Illuminate\Database\Eloquent\Model;
 
-class ListOrganizations extends ListRecords
+class ListWorkspaces extends ListRecords
 {
-    protected static string $resource = OrganizationResource::class;
+    protected static string $resource = WorkspaceResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -23,10 +23,10 @@ class ListOrganizations extends ListRecords
                     
                     $strName = Structure::find($data['structure_id'])->name;
                     $data['name'] = [
-                        'uz' => data_get($strName, 'uz') . ' ' . 'Ташкилоти',
-                        'ru' => 'Организация ' . data_get($strName, 'ru'),
-                        'en' => $data['structure_id'] . ' Organization',
-                        'oz' => data_get($strName, 'oz') . ' ' . 'Tashkiloti',
+                        'uz' => data_get($strName, 'uz') . ' ' . 'Иш майдони',
+                        'ru' => 'Рабочее пространство ' . data_get($strName, 'ru'),
+                        'en' => $data['structure_id'] . ' Workspace',
+                        'oz' => data_get($strName, 'oz') . ' ' . 'Ish maydoni',
                     ];
                     
                     $record = $model::create($data);

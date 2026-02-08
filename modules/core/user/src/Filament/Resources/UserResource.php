@@ -130,9 +130,9 @@ class UserResource extends Resource
                             ->label(__('role'))
                             ->preload()
                             ->searchable(),
-                        Select::make('organization_id')
-                            ->label(__('organization'))
-                            ->relationship('organization', 'name', function (Builder $query) {
+                        Select::make('workspace_id')
+                            ->label(__('workspace'))
+                            ->relationship('workspace', 'name', function (Builder $query) {
                                 return $query->selectRaw("id, name->'" . app()->getLocale() . "' as name")
                                     ->orderBy('name->>' . app()->getLocale(), 'desc');
                             })
@@ -141,8 +141,8 @@ class UserResource extends Resource
                     ]),
                 Hidden::make('type')
                     ->default('employee'),
-                Hidden::make('organization_id')
-                    ->default(fn() => auth()->user()->organization_id)
+                Hidden::make('workspace_id')
+                    ->default(fn() => auth()->user()->workspace_id)
                     ->hidden(fn() => auth()->user()->hasSuperAdmin())
                     ->disabled(fn() => auth()->user()->hasSuperAdmin()),
 
@@ -196,11 +196,11 @@ class UserResource extends Resource
                             return $query->where('name', 'like', '%' . $search . '%');
                         });
                     }, isIndividual: true),
-                Tables\Columns\TextColumn::make('organization.name.' . app()->getLocale())
-                    ->label(__('organization'))
+                Tables\Columns\TextColumn::make('workspace.name.' . app()->getLocale())
+                    ->label(__('workspace'))
                     ->sortable()
                     ->searchable(query: function (Builder $query, $search) {
-                        return $query->whereHas('organization', function ($query) use ($search) {
+                        return $query->whereHas('workspace', function ($query) use ($search) {
                             return getWhereTranslationColumns($query, 'name', $search);
                         });
                     }, isIndividual: true)
@@ -224,9 +224,9 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('organization_id')
-                    ->label(__('organization'))
-                    ->relationship('organization', 'title', function (Builder $query) {
+                Tables\Filters\SelectFilter::make('workspace_id')
+                    ->label(__('workspace'))
+                    ->relationship('workspace', 'title', function (Builder $query) {
                         $query->selectRaw("id, name->'" . app()->getLocale() . "' as title")
                             ->orderBy('name->>' . app()->getLocale(), 'desc');
                     }),
@@ -274,9 +274,9 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['organization'])
+            ->with(['workspace'])
             ->when(!auth()->user()->hasSuperAdmin(), function (Builder $query) {
-                $query->where('organization_id', auth()->user()->organization_id)
+                $query->where('workspace_id', auth()->user()->workspace_id)
                     ->where('type', '!=', 'superadmin');
             });
     }

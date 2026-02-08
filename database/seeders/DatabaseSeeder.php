@@ -7,7 +7,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Language\Seeders\DefaultLangSeeder;
 use Modules\MakerModule\Seeders\MakerModuleSeeder;
-use Modules\Organization\Seeders\OrganizationSeeder;
+use Modules\Workspace\Seeders\WorkspaceSeeder;
 use Modules\RolePermission\Seeders\RolePermissionSeeder;
 use Modules\RolePermission\Seeders\ShieldSeeder;
 use Modules\User\Seeders\UserSeeder;
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DefaultLangSeeder::class,
             MakerModuleSeeder::class,
-            OrganizationSeeder::class,
+            WorkspaceSeeder::class,
             ShieldSeeder::class,
             RolePermissionSeeder::class,
             UserSeeder::class,

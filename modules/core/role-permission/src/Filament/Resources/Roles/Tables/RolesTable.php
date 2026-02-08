@@ -26,8 +26,8 @@ class RolesTable
                 TextColumn::make('guard_name')
                     ->label('Guard Name'),
 
-                TextColumn::make('organization_id')
-                    ->label('Organization Id'),
+                TextColumn::make('workspace_id')
+                    ->label(__('workspace_id')),
             ])
             ->filters([
                 //
